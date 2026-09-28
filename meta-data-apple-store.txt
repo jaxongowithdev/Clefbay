@@ -1,39 +1,28 @@
 APP NAME
-Orbit Recall
+Morrow Steps
 
 SUBTITLE
-Space memory drills, offline
+Private practice, fully offline
 
 KEYWORDS
-recall,flashcard,astronomy,planets,study,revision,science,mnemonic,school,quiz,cards,learn,mars
+breathing,walk,focus,offline,journal,attention,practice,calm,private,reflection,reset
 
 PROMOTION
-Build missions of space facts, anchor each one to a picture you can't forget, then drill your weakest cues first. Grade yourself and watch the ring fill. Private, offline.
+A quiet practice teacher for walking, breathing, and private reflection — fully offline.
 
 DESCRIPTION
-Orbit Recall is an offline memory-training deck for space and science class.
+Morrow Steps is a private practice teacher for small moments of attention.
 
-Everything starts with a mission — one topic you actually need to know. The eight planets. Jupiter's moons. The Apollo flights. Give it a code, pick a track, and set how many cues you are aiming for.
-
-Inside a mission you file cues. The front of a cue is what you get asked; the anchor is the strange picture that answers it — a rusty red bicycle in the hallway for Mars, a hula hoop on the kitchen table for Saturn. Add a photo, tag it, and it is ready to train.
-
-The drill room queues your weakest cues first: faded, then shaky, then fresh. Flip a card, say the answer out loud, and grade yourself honestly — Missed, Shaky, Got it, or Locked. Every grade updates the cue's recall level, bumps its rep count, and feeds the progress rings on your deck.
+Begin with Walk: four clear prompts to arrive, notice, move, and return. Open Four Columns for a rising-column breath that guides inhale, hold, exhale, and rest. Set a practice window in Range, then put down what you noticed in a Tablet note.
 
 WHAT YOU GET
 
-• Missions grouped by track — planets, moons, deep sky, space tech, physics, numbers, timeline
-• Cues with an anchor, a photo, tags and twelve cue types (peg, journey, story, image, number, acronym and more)
-• A drill room with weakest-first or starred-only runs, in blocks of 5, 10, 20 or 40
-• Five recall levels — Fresh, Shaky, Steady, Locked, Faded — with a run score at the end of every session
-• A starred drill deck for the cues you want in tonight's run
-• Progress page with recall spread, breakdown by track and by cue type, and total reps
-• Flight log recording every time a cue is reassigned to another mission, with your note
-• Search across cue fronts, anchors, tags and types
-• Light and dark appearance, or match your phone
-• Export everything to a single JSON file and restore it whenever you want
+• A complete, gentle onboarding
+• Walk, a four-step return-to-the-room practice
+• Four Columns, a timed rising-column breath
+• Range controls for a 3, 5, 7, or 10 minute practice window
+• Tablet, a journal for notes saved directly on your device
 
 PRIVATE BY DESIGN
 
-There is no account and no sign-in. Orbit Recall makes no network calls at all — missions, cues, photos and drill history live in this app's own storage on your phone. Camera and photo library access are optional and used only when you attach a picture to a cue.
-
-Good for students revising for a science test, teachers building a class set of cues, and anyone who wants their astronomy facts to stick.
+There is no account, no sign-in, no cloud sync, and no remote AI. Morrow Steps makes no network calls. Your practice preferences and Tablet notes stay in local storage on your phone.

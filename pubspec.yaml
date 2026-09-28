@@ -1,5 +1,5 @@
 name: user_screen
-description: "Orbit Recall - Build missions of space facts, anchor each cue to a picture, then drill the weakest ones first. Completely offline."
+description: "Morrow Steps - A private, fully offline practice teacher for walking, breathing, and reflection."
 version: 1.0.0+2
 
 environment:

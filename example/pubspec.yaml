@@ -1,5 +1,5 @@
-name: orbit_recall_example
-description: "Orbit Recall - Space memory drills"
+name: morrow_steps_example
+description: "Morrow Steps - Private offline practice teacher"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
