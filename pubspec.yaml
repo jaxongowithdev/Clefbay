@@ -1,5 +1,5 @@
 name: user_screen
-description: "Sparglass - A private, fully offline practice teacher for walking, breathing, and a device-only journal."
+description: "Orchard Bell - A private, fully offline practice teacher for a room walk, a rising breath, and a device journal."
 version: 1.0.0+2
 
 environment:
@@ -28,15 +28,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: Syne
+    - family: Fraunces
       fonts:
-        - asset: assets/fonts/Syne-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Syne-Medium.ttf
+        - asset: assets/fonts/Fraunces-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Syne-SemiBold.ttf
+        - asset: assets/fonts/Fraunces-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Syne-Bold.ttf
+        - asset: assets/fonts/Fraunces-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Syne-ExtraBold.ttf
-          weight: 800
