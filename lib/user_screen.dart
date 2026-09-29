@@ -1,4 +1,4 @@
-/// Orbit Recall — offline memory-training deck for space and science class.
+/// Sparglass — private offline practice teacher.
 library;
 
 export 'src/screens/user_screen.dart';

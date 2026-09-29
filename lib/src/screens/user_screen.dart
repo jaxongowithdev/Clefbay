@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// A private, device-only practice teacher. It deliberately has no accounts,
-/// network clients, cloud sync, or remote model integration.
+/// Device-only practice teacher. No accounts, network clients, cloud sync,
+/// or remote model calls.
 class UserScreen extends StatefulWidget {
   const UserScreen({super.key});
 
@@ -28,28 +28,31 @@ class _Note {
 
   static _Note fromJson(Map<String, dynamic> json) => _Note(
         body: json['body'] as String? ?? '',
-        time:
-            DateTime.tryParse(json['time'] as String? ?? '') ?? DateTime.now(),
+        time: DateTime.tryParse(json['time'] as String? ?? '') ?? DateTime.now(),
       );
 }
 
 class _UserScreenState extends State<UserScreen> {
-  static const _navy = Color(0xFF182B3A);
-  static const _paper = Color(0xFFF7F5EF);
-  static const _sand = Color(0xFFE9E4D7);
-  static const _copper = Color(0xFFE9774F);
-  static const _sky = Color(0xFFB9DCE3);
-  static const _sage = Color(0xFFABC6A6);
+  static const _ink = Color(0xFF101318);
+  static const _panel = Color(0xFF1A1F29);
+  static const _line = Color(0xFF2C3342);
+  static const _chalk = Color(0xFFF4F1E8);
+  static const _mute = Color(0xFF8E97A8);
+  static const _signal = Color(0xFFFF4D2E);
+  static const _ice = Color(0xFF8FB4FF);
+
+  static const _ranges = [4, 8, 12, 20];
 
   final _noteController = TextEditingController();
   final _onboarding = PageController();
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   Timer? _breathTimer;
   SharedPreferences? _prefs;
   List<_Note> _notes = [];
   _Tab _tab = _Tab.home;
   int _onboardingPage = 0;
   int _walkStep = 0;
-  int _rangeMinutes = 5;
+  int _rangeMinutes = 8;
   int _breathPhase = 0;
   int _breathSeconds = 4;
   bool _breathing = false;
@@ -58,24 +61,20 @@ class _UserScreenState extends State<UserScreen> {
 
   final _walkSteps = const [
     (
-      'Arrive',
-      'Set both feet on the floor. Let your shoulders fall.',
-      Icons.chair_alt_outlined,
+      'Plant',
+      'Put both feet flat. Unclench the jaw and let the hands hang.',
     ),
     (
-      'Notice',
-      'Name three things you can see, without judging them.',
-      Icons.visibility_outlined,
+      'Count',
+      'Name three objects you can see. One word each, then stop.',
     ),
     (
-      'Move',
-      'Take four slow steps. Feel heel, foot, then ground.',
-      Icons.directions_walk_outlined,
+      'Pace',
+      'Take four steps. Feel the heel, then the front of the foot.',
     ),
     (
-      'Return',
-      'Choose one useful next action for this moment.',
-      Icons.arrow_outward_rounded,
+      'Mark',
+      'Say the single next action for this moment, out loud.',
     ),
   ];
 
@@ -87,7 +86,7 @@ class _UserScreenState extends State<UserScreen> {
 
   Future<void> _loadLocalState() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('quiet_columns_notes') ?? '[]';
+    final raw = prefs.getString('sparglass_notes') ?? '[]';
     try {
       final decoded = jsonDecode(raw) as List<dynamic>;
       _notes = decoded
@@ -100,42 +99,46 @@ class _UserScreenState extends State<UserScreen> {
     if (!mounted) return;
     setState(() {
       _prefs = prefs;
-      _onboarded = prefs.getBool('quiet_columns_onboarded') ?? false;
-      _rangeMinutes = prefs.getInt('quiet_columns_range') ?? 5;
+      _onboarded = prefs.getBool('sparglass_onboarded') ?? false;
+      _rangeMinutes = prefs.getInt('sparglass_range') ?? 8;
       _ready = true;
     });
   }
 
   Future<void> _finishOnboarding() async {
-    await _prefs?.setBool('quiet_columns_onboarded', true);
+    await _prefs?.setBool('sparglass_onboarded', true);
     if (mounted) setState(() => _onboarded = true);
   }
 
   Future<void> _saveRange(int minutes) async {
     setState(() => _rangeMinutes = minutes);
-    await _prefs?.setInt('quiet_columns_range', minutes);
+    await _prefs?.setInt('sparglass_range', minutes);
   }
 
   Future<void> _saveNote() async {
     final body = _noteController.text.trim();
-    if (body.isEmpty) return;
+    if (body.isEmpty) {
+      _toast('Write a note before saving.');
+      return;
+    }
     final note = _Note(body: body, time: DateTime.now());
     setState(() {
       _notes = [note, ..._notes];
       _noteController.clear();
     });
     await _prefs?.setString(
-      'quiet_columns_notes',
+      'sparglass_notes',
       jsonEncode(_notes.map((note) => note.toJson()).toList()),
     );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Saved privately on this device.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+    _toast('Saved on this device. Private journal.');
+  }
+
+  void _toast(String message) {
+    final messenger = _messengerKey.currentState;
+    if (messenger == null) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _startBreath() {
@@ -174,16 +177,32 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Morrow Steps',
+      title: 'Sparglass',
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: _messengerKey,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: _paper,
-        colorScheme: ColorScheme.fromSeed(seedColor: _navy, surface: _paper),
-        fontFamily: 'Roboto',
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: _ink,
+        fontFamily: 'Syne',
+        splashFactory: NoSplash.splashFactory,
+        colorScheme: const ColorScheme.dark(
+          surface: _ink,
+          primary: _signal,
+          onPrimary: Colors.white,
+          onSurface: _chalk,
+        ),
+        snackBarTheme: const SnackBarThemeData(
+          backgroundColor: _panel,
+          behavior: SnackBarBehavior.floating,
+          contentTextStyle: TextStyle(color: _chalk, fontSize: 14),
+        ),
       ),
       home: !_ready
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          ? const Scaffold(
+              backgroundColor: _ink,
+              body: Center(child: CircularProgressIndicator(color: _signal)),
+            )
           : _onboarded
               ? _shell()
               : _onboardingScreen(),
@@ -193,128 +212,108 @@ class _UserScreenState extends State<UserScreen> {
   Widget _onboardingScreen() {
     const pages = [
       (
-        'A private teacher\nfor your attention.',
-        'A calm practice space that lives entirely on this device.',
-        Icons.waves_rounded,
-        _sky,
+        '01',
+        'Sparglass is\nyour teacher.',
+        'A complete practice that stays on this phone. Nothing leaves the device.',
       ),
       (
-        'Small practices,\nclear steps.',
-        'Walk when you need to arrive. Use Four Columns when you need to reset.',
-        Icons.route_outlined,
-        _sage,
+        '02',
+        'Walk, then\nbreathe.',
+        'Walk is four guided steps. Four Columns is a rising-column breath.',
       ),
       (
-        'Your words stay\nwith you.',
-        'Tablet notes are saved locally. No account. No cloud. No remote AI.',
-        Icons.edit_note_rounded,
-        Color(0xFFF4C8A8),
+        '03',
+        'Keep a private\njournal.',
+        'Tablet notes stay here. No account. No cloud. No remote AI.',
       ),
     ];
+    final last = _onboardingPage == pages.length - 1;
     return Scaffold(
+      backgroundColor: _ink,
       body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _finishOnboarding,
-                child: const Text('Skip'),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text('SPARGLASS', style: _kicker()),
+                  const Spacer(),
+                  Text(
+                    pages[_onboardingPage].$1,
+                    style: _kicker(color: _signal),
+                  ),
+                ],
               ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _onboarding,
-                itemCount: pages.length,
-                onPageChanged: (value) =>
-                    setState(() => _onboardingPage = value),
-                itemBuilder: (_, index) {
-                  final page = pages[index];
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(30, 20, 30, 28),
-                    child: Column(
+              const SizedBox(height: 14),
+              Row(
+                children: List.generate(pages.length, (index) {
+                  return Expanded(
+                    child: Container(
+                      height: 3,
+                      margin: EdgeInsets.only(right: index == pages.length - 1 ? 0 : 6),
+                      color: index <= _onboardingPage ? _signal : _line,
+                    ),
+                  );
+                }),
+              ),
+              Expanded(
+                child: PageView.builder(
+                  controller: _onboarding,
+                  itemCount: pages.length,
+                  onPageChanged: (value) => setState(() => _onboardingPage = value),
+                  itemBuilder: (_, index) {
+                    final page = pages[index];
+                    return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Spacer(),
-                        Container(
-                          width: 116,
-                          height: 116,
-                          decoration: BoxDecoration(
-                            color: page.$4,
-                            borderRadius: BorderRadius.circular(38),
-                          ),
-                          child: Icon(page.$3, size: 56, color: _navy),
-                        ),
-                        const SizedBox(height: 36),
+                        Text(page.$2, style: _display(42)),
+                        const SizedBox(height: 18),
                         Text(
-                          page.$1,
+                          page.$3,
                           style: const TextStyle(
-                            fontSize: 36,
-                            height: 1.04,
-                            letterSpacing: -1.5,
-                            fontWeight: FontWeight.w800,
-                            color: _navy,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          page.$2,
-                          style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 17,
                             height: 1.45,
-                            color: Color(0xFF53626B),
+                            color: _mute,
+                            fontFamily: 'Syne',
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Spacer(flex: 2),
                       ],
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(30, 0, 30, 28),
-              child: Row(
-                children: [
-                  Row(
-                    children: List.generate(
-                      pages.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        margin: const EdgeInsets.only(right: 6),
-                        height: 7,
-                        width: index == _onboardingPage ? 26 : 7,
-                        decoration: BoxDecoration(
-                          color: index == _onboardingPage ? _navy : _sand,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  FilledButton(
-                    onPressed: _onboardingPage == pages.length - 1
-                        ? _finishOnboarding
-                        : () => _onboarding.nextPage(
-                              duration: const Duration(milliseconds: 280),
-                              curve: Curves.easeOutCubic,
-                            ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _navy,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 22,
-                        vertical: 15,
-                      ),
-                    ),
-                    child: Text(
-                      _onboardingPage == pages.length - 1 ? 'Begin' : 'Next',
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  key: const Key('onboarding-advance'),
+                  onPressed: last
+                      ? _finishOnboarding
+                      : () => _onboarding.nextPage(
+                            duration: const Duration(milliseconds: 280),
+                            curve: Curves.easeOutCubic,
+                          ),
+                  style: _signalButton(),
+                  child: Text(last ? 'Begin' : 'Next'),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: _finishOnboarding,
+                  child: const Text(
+                    'Skip setup',
+                    style: TextStyle(color: _mute, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -323,541 +322,542 @@ class _UserScreenState extends State<UserScreen> {
   Widget _shell() {
     final pages = [_home(), _walk(), _four(), _range(), _tablet()];
     return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(index: _tab.index, children: pages),
-      ),
-      bottomNavigationBar: NavigationBar(
-        height: 70,
-        backgroundColor: Colors.white,
-        indicatorColor: _sky,
-        selectedIndex: _tab.index,
-        onDestinationSelected: (index) =>
-            setState(() => _tab = _Tab.values[index]),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+      backgroundColor: _ink,
+      body: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: IndexedStack(index: _tab.index, children: pages),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.directions_walk_outlined),
-            selectedIcon: Icon(Icons.directions_walk_rounded),
-            label: 'Walk',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.vertical_align_center_rounded),
-            selectedIcon: Icon(Icons.vertical_align_center_rounded),
-            label: 'Four',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.tune_rounded),
-            selectedIcon: Icon(Icons.tune_rounded),
-            label: 'Range',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.edit_note_rounded),
-            selectedIcon: Icon(Icons.edit_note_rounded),
-            label: 'Tablet',
-          ),
+          _dock(),
         ],
       ),
     );
   }
 
-  Widget _home() => _pageFrame(
-        eyebrow: 'MORROW STEPS',
-        title: 'What would\nhelp right now?',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            _practiceCard(
-              color: _sky,
-              icon: Icons.directions_walk_rounded,
-              title: 'Walk',
-              body: 'A four-step return to the room.',
-              action: 'Start walking',
-              onTap: () => setState(() => _tab = _Tab.walk),
+  Widget _dock() {
+    const items = [
+      (_Tab.home, 'Home', Icons.grid_view_rounded, 'tab-home'),
+      (_Tab.walk, 'Walk', Icons.hiking_rounded, 'tab-walk'),
+      (_Tab.four, 'Four', Icons.view_column_rounded, 'tab-four'),
+      (_Tab.range, 'Range', Icons.timelapse_rounded, 'tab-range'),
+      (_Tab.tablet, 'Tablet', Icons.menu_book_rounded, 'tab-tablet'),
+    ];
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    return Container(
+      padding: EdgeInsets.only(bottom: bottom),
+      decoration: const BoxDecoration(
+        color: _panel,
+        border: Border(top: BorderSide(color: _line)),
+      ),
+      child: Row(
+        children: [
+          for (final item in items)
+            Expanded(
+              child: InkWell(
+                key: Key(item.$4),
+                onTap: () => setState(() => _tab = item.$1),
+                child: SizedBox(
+                  height: 58,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 2,
+                        color: _tab == item.$1 ? _signal : Colors.transparent,
+                      ),
+                      const SizedBox(height: 8),
+                      Icon(
+                        item.$3,
+                        size: 20,
+                        color: _tab == item.$1 ? _signal : _mute,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        item.$2,
+                        style: TextStyle(
+                          fontFamily: 'Syne',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: _tab == item.$1 ? _chalk : _mute,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: 14),
-            _practiceCard(
-              color: _sage,
-              icon: Icons.vertical_align_center_rounded,
-              title: 'Four Columns',
-              body: 'A rising-column breath for steady attention.',
-              action: 'Breathe now',
-              onTap: () => setState(() => _tab = _Tab.four),
+        ],
+      ),
+    );
+  }
+
+  Widget _home() => _page(
+        kicker: 'SPARGLASS',
+        title: "Today's lesson.",
+        children: [
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(border: Border.all(color: _line)),
+            child: const Text(
+              'Private journal on this phone.\nNo account. No cloud. No remote AI.',
+              style: TextStyle(
+                color: _chalk,
+                fontSize: 14,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(height: 22),
-            _offlineMark(),
-          ],
-        ),
+          ),
+          const SizedBox(height: 18),
+          _lesson(
+            index: '01',
+            title: 'Walk',
+            body: 'Four steps back into the room.',
+            onTap: () => setState(() => _tab = _Tab.walk),
+          ),
+          _lesson(
+            index: '02',
+            title: 'Four Columns',
+            body: 'A rising-column breath.',
+            onTap: () => setState(() => _tab = _Tab.four),
+          ),
+          _lesson(
+            index: '03',
+            title: 'Range',
+            body: 'Window set to $_rangeMinutes minutes.',
+            onTap: () => setState(() => _tab = _Tab.range),
+          ),
+          _lesson(
+            index: '04',
+            title: 'Tablet',
+            body: 'A note that never leaves this phone.',
+            onTap: () => setState(() => _tab = _Tab.tablet),
+          ),
+        ],
       );
 
   Widget _walk() {
     final step = _walkSteps[_walkStep];
-    return _pageFrame(
-      eyebrow: 'WALK · ${_walkStep + 1} OF ${_walkSteps.length}',
-      title: 'A short way\nback to here.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 28),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: _sand),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(13),
-                  decoration: BoxDecoration(
-                    color: _sky,
-                    borderRadius: BorderRadius.circular(17),
-                  ),
-                  child: Icon(step.$3, color: _navy, size: 30),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  step.$1,
-                  style: const TextStyle(
-                    fontSize: 27,
-                    fontWeight: FontWeight.w800,
-                    color: _navy,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  step.$2,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    height: 1.45,
-                    color: Color(0xFF53626B),
-                  ),
-                ),
-              ],
-            ),
+    return _page(
+      kicker: 'WALK',
+      title: 'Step ${_walkStep + 1} of ${_walkSteps.length}',
+      children: [
+        const SizedBox(height: 22),
+        Text(
+          '0${_walkStep + 1}',
+          style: const TextStyle(
+            fontFamily: 'Syne',
+            fontSize: 64,
+            height: 0.9,
+            fontWeight: FontWeight.w800,
+            color: _signal,
           ),
-          const SizedBox(height: 22),
-          LinearProgressIndicator(
-            value: (_walkStep + 1) / _walkSteps.length,
-            minHeight: 7,
-            borderRadius: BorderRadius.circular(12),
-            backgroundColor: _sand,
-            color: _copper,
+        ),
+        const SizedBox(height: 8),
+        Text(step.$1, style: _display(34)),
+        const SizedBox(height: 12),
+        Text(
+          step.$2,
+          style: const TextStyle(
+            fontSize: 17,
+            height: 1.45,
+            color: _mute,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => setState(
-                () => _walkStep = (_walkStep + 1) % _walkSteps.length,
+        ),
+        const SizedBox(height: 26),
+        Row(
+          children: List.generate(_walkSteps.length, (index) {
+            return Expanded(
+              child: Container(
+                height: 4,
+                margin: EdgeInsets.only(right: index == _walkSteps.length - 1 ? 0 : 6),
+                color: index <= _walkStep ? _signal : _line,
               ),
-              style: FilledButton.styleFrom(
-                backgroundColor: _navy,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 17),
-              ),
-              icon: Icon(
-                _walkStep == _walkSteps.length - 1
-                    ? Icons.replay_rounded
-                    : Icons.arrow_forward_rounded,
-              ),
-              label: Text(
-                _walkStep == _walkSteps.length - 1 ? 'Walk again' : 'Next step',
-              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 22),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            key: const Key('walk-advance'),
+            onPressed: () => setState(
+              () => _walkStep = (_walkStep + 1) % _walkSteps.length,
+            ),
+            style: _signalButton(),
+            child: Text(
+              _walkStep == _walkSteps.length - 1 ? 'Walk again' : 'Next step',
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _four() {
     const labels = ['Inhale', 'Hold', 'Exhale', 'Rest'];
-    return _pageFrame(
-      eyebrow: 'FOUR COLUMNS',
-      title: 'Let the breath\nrise and fall.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 18),
-          Text(
-            'Follow one column at a time. Every phase is four soft counts.',
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.45,
-              color: Color(0xFF53626B),
-            ),
+    return _page(
+      kicker: 'FOUR COLUMNS',
+      title: 'Rising breath.',
+      children: [
+        const SizedBox(height: 12),
+        const Text(
+          'One column for each phase. The active column rises through four counts.',
+          style: TextStyle(
+            fontSize: 15,
+            height: 1.45,
+            color: _mute,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(height: 34),
-          SizedBox(
-            height: 224,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(4, (index) {
-                final active = index == _breathPhase;
-                final height = [92.0, 145.0, 196.0, 124.0][index];
-                return Expanded(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 360),
-                    margin: const EdgeInsets.symmetric(horizontal: 5),
-                    height: active && _breathing ? height + 18 : height,
-                    decoration: BoxDecoration(
-                      color: active ? _copper : _sand,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: active ? Colors.white : _navy,
-                          ),
+        ),
+        const SizedBox(height: 28),
+        SizedBox(
+          height: 236,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: List.generate(4, (index) {
+              final active = _breathing && index == _breathPhase;
+              final rise = active ? (5 - _breathSeconds) / 4 : 0.0;
+              final height = 28 + rise * 172;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 280),
+                        curve: Curves.easeOut,
+                        height: height,
+                        decoration: BoxDecoration(
+                          color: active ? _signal : _panel,
+                          border: Border.all(color: active ? _signal : _line),
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        labels[index],
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: active ? _chalk : _mute,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 22),
+        Text(
+          _breathing ? '${labels[_breathPhase]} · $_breathSeconds' : 'Ready',
+          style: _display(28),
+        ),
+        const SizedBox(height: 18),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            key: const Key('breath-toggle'),
+            onPressed: _breathing ? _stopBreath : _startBreath,
+            style: _signalButton(),
+            child: Text(_breathing ? 'End breath' : 'Start Four Columns'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _range() => _page(
+        kicker: 'RANGE',
+        title: 'Session window.',
+        children: [
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('$_rangeMinutes', style: _display(72)),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12, left: 8),
+                child: Text(
+                  'MIN',
+                  style: TextStyle(
+                    color: _ice,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Text(
+            'Stored only on this device.',
+            style: TextStyle(color: _mute, fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 22),
+          for (final minute in _ranges)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: InkWell(
+                key: Key('range-$minute'),
+                onTap: () => _saveRange(minute),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: _rangeMinutes == minute ? _panel : Colors.transparent,
+                    border: Border.all(
+                      color: _rangeMinutes == minute ? _signal : _line,
                     ),
                   ),
-                );
-              }),
-            ),
-          ),
-          const SizedBox(height: 22),
-          Center(
-            child: Text(
-              _breathing
-                  ? '${labels[_breathPhase]} · $_breathSeconds'
-                  : 'Ready when you are',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: _navy,
+                  child: Row(
+                    children: [
+                      Text(
+                        '$minute min',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: _chalk,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_rangeMinutes == minute)
+                        const Icon(Icons.check, color: _signal, size: 18),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 22),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _breathing ? _stopBreath : _startBreath,
-              icon: Icon(
-                _breathing
-                    ? Icons.stop_circle_outlined
-                    : Icons.play_arrow_rounded,
-              ),
-              label: Text(_breathing ? 'End practice' : 'Begin four breaths'),
-              style: FilledButton.styleFrom(
-                backgroundColor: _navy,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 17),
-              ),
-            ),
+          const SizedBox(height: 8),
+          const Text(
+            'A range is the time you allow, not a score to hit.',
+            style: TextStyle(fontSize: 15, height: 1.45, color: _mute),
           ),
         ],
+      );
+
+  Widget _tablet() => _page(
+        kicker: 'TABLET',
+        title: 'Private journal.',
+        children: [
+          const SizedBox(height: 16),
+          TextField(
+            key: const Key('tablet-field'),
+            controller: _noteController,
+            minLines: 4,
+            maxLines: 6,
+            style: const TextStyle(color: _chalk, fontSize: 16, height: 1.4),
+            cursorColor: _signal,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: 'What did this session leave behind?',
+              hintStyle: const TextStyle(color: _mute),
+              filled: true,
+              fillColor: _panel,
+              contentPadding: const EdgeInsets.all(16),
+              border: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: _line),
+              ),
+              enabledBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: _line),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: _ice, width: 1.4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              key: const Key('tablet-save'),
+              onPressed: _saveNote,
+              style: _signalButton(),
+              child: const Text('Save note'),
+            ),
+          ),
+          const SizedBox(height: 26),
+          Row(
+            children: [
+              Text('ON THIS DEVICE', style: _kicker()),
+              const Spacer(),
+              Text(
+                '${_notes.length}',
+                style: const TextStyle(color: _mute, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_notes.isEmpty)
+            const Text(
+              'No notes yet. The first one stays on this phone.',
+              style: TextStyle(fontSize: 15, color: _mute, height: 1.4),
+            )
+          else
+            for (final note in _notes.take(6))
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: _line)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _stamp(note.time),
+                      style: const TextStyle(
+                        color: _ice,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      note.body,
+                      style: const TextStyle(color: _chalk, fontSize: 15, height: 1.35),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      );
+
+  Widget _page({
+    required String kicker,
+    required String title,
+    required List<Widget> children,
+  }) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(22, 20, 22, 28),
+      children: [
+        Text(kicker, style: _kicker()),
+        const SizedBox(height: 8),
+        Text(title, style: _display(36)),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _lesson({
+    required String index,
+    required String title,
+    required String body,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+          decoration: BoxDecoration(
+            color: _panel,
+            border: Border.all(color: _line),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 34,
+                child: Text(
+                  index,
+                  style: const TextStyle(
+                    fontFamily: 'Syne',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: _signal,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Syne',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: _chalk,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      body,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        height: 1.3,
+                        color: _mute,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward, size: 16, color: _mute),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _range() => _pageFrame(
-        eyebrow: 'RANGE',
-        title: 'Make room\nfor the moment.',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 25),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: _sky,
-                borderRadius: BorderRadius.circular(26),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Practice window',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: _navy,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '$_rangeMinutes minutes',
-                    style: const TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -2,
-                      color: _navy,
-                    ),
-                  ),
-                  const Text(
-                    'This choice is stored only on your device.',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF53626B)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 28),
-            const Text(
-              'Choose a range',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: _navy,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              children: [3, 5, 7, 10]
-                  .map(
-                    (minute) => ChoiceChip(
-                      label: Text('$minute min'),
-                      selected: _rangeMinutes == minute,
-                      onSelected: (_) => _saveRange(minute),
-                      selectedColor: _sage,
-                      side: BorderSide(
-                        color: _rangeMinutes == minute ? _sage : _sand,
-                      ),
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: _navy,
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'A range is a permission, not a target. Take the time you have; leave the rest.',
-              style: TextStyle(
-                  fontSize: 17, height: 1.5, color: Color(0xFF53626B)),
-            ),
-          ],
+  TextStyle _kicker({Color color = _ice}) => TextStyle(
+        fontFamily: 'Syne',
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 2.2,
+        color: color,
+      );
+
+  TextStyle _display(double size) => TextStyle(
+        fontFamily: 'Syne',
+        fontSize: size,
+        height: 0.96,
+        fontWeight: FontWeight.w700,
+        color: _chalk,
+      );
+
+  ButtonStyle _signalButton() => FilledButton.styleFrom(
+        backgroundColor: _signal,
+        foregroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        textStyle: const TextStyle(
+          fontFamily: 'Syne',
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
         ),
       );
 
-  Widget _tablet() => _pageFrame(
-        eyebrow: 'TABLET · PRIVATE NOTE',
-        title: 'Put it down\nin your own words.',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 21),
-            TextField(
-              controller: _noteController,
-              minLines: 4,
-              maxLines: 6,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: 'What are you noticing?',
-                hintStyle: const TextStyle(color: Color(0xFF818C92)),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(18),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: _sand),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: _sand),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: _navy, width: 1.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.icon(
-                onPressed: _saveNote,
-                icon: const Icon(Icons.lock_outline_rounded, size: 18),
-                label: const Text('Save on this device'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _navy,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 26),
-            Row(
-              children: [
-                const Text(
-                  'Saved notes',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                    color: _navy,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '${_notes.length} local',
-                  style:
-                      const TextStyle(fontSize: 13, color: Color(0xFF53626B)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (_notes.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 22),
-                child: Text(
-                  'Nothing saved yet. Your first note will appear here.',
-                  style: TextStyle(fontSize: 16, color: Color(0xFF53626B)),
-                ),
-              )
-            else
-              ..._notes.take(4).map(
-                    (note) => Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: _sand),
-                      ),
-                      child: Text(
-                        note.body,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 1.35,
-                          color: _navy,
-                        ),
-                      ),
-                    ),
-                  ),
-          ],
-        ),
-      );
-
-  Widget _pageFrame({
-    required String eyebrow,
-    required String title,
-    required Widget child,
-  }) =>
-      SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 36),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              eyebrow,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.35,
-                color: _copper,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 34,
-                height: 1.04,
-                letterSpacing: -1.3,
-                fontWeight: FontWeight.w800,
-                color: _navy,
-              ),
-            ),
-            child,
-          ],
-        ),
-      );
-
-  Widget _practiceCard({
-    required Color color,
-    required IconData icon,
-    required String title,
-    required String body,
-    required String action,
-    required VoidCallback onTap,
-  }) =>
-      InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(28),
-        child: Ink(
-          padding: const EdgeInsets.all(21),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: _navy, size: 32),
-              const SizedBox(height: 24),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 23,
-                  fontWeight: FontWeight.w800,
-                  color: _navy,
-                ),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                body,
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 1.35,
-                  color: Color(0xFF465963),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Text(
-                    action,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: _navy,
-                    ),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.arrow_forward_rounded, color: _navy),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-
-  Widget _offlineMark() => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: _sand),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.lock_outline_rounded, color: _navy),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Private by design\nNo account · No cloud · No remote AI',
-                style: TextStyle(fontSize: 14, height: 1.35, color: _navy),
-              ),
-            ),
-          ],
-        ),
-      );
+  String _stamp(DateTime time) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final h = time.hour.toString().padLeft(2, '0');
+    final m = time.minute.toString().padLeft(2, '0');
+    return '${months[time.month - 1]} ${time.day}  $h:$m';
+  }
 }

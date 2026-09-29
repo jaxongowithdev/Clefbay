@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Morrow Steps - Private offline practice teacher"
+description: "Sparglass - Private offline practice teacher"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
