@@ -1,5 +1,5 @@
 name: user_screen
-description: "Orchard Bell - A private, fully offline practice teacher for a room walk, a rising breath, and a device journal."
+description: "Amberwick - A private, fully offline practice teacher filed on the device."
 version: 1.0.0+2
 
 environment:
@@ -28,11 +28,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: Fraunces
+    - family: IBM Plex Mono
       fonts:
-        - asset: assets/fonts/Fraunces-Medium.ttf
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexMono-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Fraunces-SemiBold.ttf
+        - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Fraunces-Bold.ttf
-          weight: 700

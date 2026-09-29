@@ -1,4 +1,4 @@
-/// Orchard Bell — private offline practice teacher.
+/// Amberwick — private offline practice teacher.
 library;
 
 export 'src/screens/user_screen.dart';

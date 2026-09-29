@@ -33,14 +33,14 @@ class _Note {
 }
 
 class _UserScreenState extends State<UserScreen> {
-  static const _leaf = Color(0xFFE7F3E2);
-  static const _moss = Color(0xFF1B4332);
-  static const _berry = Color(0xFFD83A66);
-  static const _cream = Color(0xFFFFFBF4);
-  static const _stem = Color(0xFF5E7F62);
-  static const _track = Color(0xFFD3E6CC);
+  static const _paper = Color(0xFFE7EBF2);
+  static const _sheet = Color(0xFFF4F6FA);
+  static const _ink = Color(0xFF16181D);
+  static const _amber = Color(0xFFF0A202);
+  static const _rule = Color(0xFFC5CCD6);
+  static const _mute = Color(0xFF5C6570);
 
-  static const _ranges = [2, 6, 9, 15];
+  static const _ranges = [5, 10, 15, 25];
 
   final _noteController = TextEditingController();
   final _onboarding = PageController();
@@ -51,7 +51,7 @@ class _UserScreenState extends State<UserScreen> {
   _Tab _tab = _Tab.home;
   int _onboardingPage = 0;
   int _walkStep = 0;
-  int _rangeMinutes = 6;
+  int _rangeMinutes = 10;
   int _breathPhase = 0;
   int _breathSeconds = 4;
   bool _breathing = false;
@@ -60,20 +60,20 @@ class _UserScreenState extends State<UserScreen> {
 
   final _walkSteps = const [
     (
-      'Settle',
-      'Stand or sit. Let the shoulders drop away from the ears.',
+      'Still',
+      'Stop where you are. Let both feet go quiet.',
     ),
     (
-      'Look',
-      'Find one color nearby and say its name once.',
+      'Frame',
+      'Choose one rectangle: a window, a door, or a picture.',
     ),
     (
-      'Cross',
-      'Walk to the far side of the room, then walk back.',
+      'Travel',
+      'Walk the edge of that rectangle, then return.',
     ),
     (
-      'Choose',
-      'Pick the next small task and start it before you sit again.',
+      'Note',
+      'Name one thing that is different now that you are back.',
     ),
   ];
 
@@ -85,7 +85,7 @@ class _UserScreenState extends State<UserScreen> {
 
   Future<void> _loadLocalState() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('orchardbell_notes') ?? '[]';
+    final raw = prefs.getString('amberwick_notes') ?? '[]';
     try {
       final decoded = jsonDecode(raw) as List<dynamic>;
       _notes = decoded
@@ -98,26 +98,26 @@ class _UserScreenState extends State<UserScreen> {
     if (!mounted) return;
     setState(() {
       _prefs = prefs;
-      _onboarded = prefs.getBool('orchardbell_onboarded') ?? false;
-      _rangeMinutes = prefs.getInt('orchardbell_range') ?? 6;
+      _onboarded = prefs.getBool('amberwick_onboarded') ?? false;
+      _rangeMinutes = prefs.getInt('amberwick_range') ?? 10;
       _ready = true;
     });
   }
 
   Future<void> _finishOnboarding() async {
-    await _prefs?.setBool('orchardbell_onboarded', true);
+    await _prefs?.setBool('amberwick_onboarded', true);
     if (mounted) setState(() => _onboarded = true);
   }
 
   Future<void> _saveRange(int minutes) async {
     setState(() => _rangeMinutes = minutes);
-    await _prefs?.setInt('orchardbell_range', minutes);
+    await _prefs?.setInt('amberwick_range', minutes);
   }
 
   Future<void> _saveNote() async {
     final body = _noteController.text.trim();
     if (body.isEmpty) {
-      _toast('Write a line before you save.');
+      _toast('Write a line before you file it.');
       return;
     }
     final note = _Note(body: body, time: DateTime.now());
@@ -126,10 +126,10 @@ class _UserScreenState extends State<UserScreen> {
       _noteController.clear();
     });
     await _prefs?.setString(
-      'orchardbell_notes',
+      'amberwick_notes',
       jsonEncode(_notes.map((note) => note.toJson()).toList()),
     );
-    _toast('Kept on this phone. Private journal.');
+    _toast('Filed on this device. Private journal.');
   }
 
   void _toast(String message) {
@@ -176,28 +176,29 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Orchard Bell',
+      title: 'Amberwick',
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: _messengerKey,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: _leaf,
-        fontFamily: 'Fraunces',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _berry,
-          surface: _leaf,
-        ),
-        snackBarTheme: SnackBarThemeData(
-          backgroundColor: _moss,
+        scaffoldBackgroundColor: _paper,
+        fontFamily: 'IBM Plex Mono',
+        colorScheme: ColorScheme.fromSeed(seedColor: _amber, surface: _paper),
+        splashFactory: NoSplash.splashFactory,
+        snackBarTheme: const SnackBarThemeData(
+          backgroundColor: _ink,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          contentTextStyle: const TextStyle(color: _cream, fontSize: 14),
+          contentTextStyle: TextStyle(
+            color: _amber,
+            fontFamily: 'IBM Plex Mono',
+            fontSize: 13,
+          ),
         ),
       ),
       home: !_ready
           ? const Scaffold(
-              backgroundColor: _leaf,
-              body: Center(child: CircularProgressIndicator(color: _berry)),
+              backgroundColor: _paper,
+              body: Center(child: CircularProgressIndicator(color: _ink)),
             )
           : _onboarded
               ? _shell()
@@ -208,63 +209,71 @@ class _UserScreenState extends State<UserScreen> {
   Widget _onboardingScreen() {
     const pages = [
       (
-        Icons.notifications_none_rounded,
-        'A teacher\nin your pocket.',
-        'Orchard Bell keeps the whole lesson on this phone.',
+        '01',
+        'A teacher\non this phone.',
+        'Amberwick files the whole lesson on the device. Nothing is sent away.',
       ),
       (
-        Icons.park_rounded,
-        'Walk, then\nfill the columns.',
-        'Walk is four steps across the room. Four Columns is a rising-column breath.',
+        '02',
+        'Walk, then\nraise a column.',
+        'Walk is four steps. Four Columns is a rising-column breath.',
       ),
       (
-        Icons.draw_rounded,
-        'The journal\nstays here.',
-        'Tablet notes never leave the device. No account. No cloud. No remote AI.',
+        '03',
+        'File the note\nhere.',
+        'Tablet is a private journal. No account. No cloud. No remote AI.',
       ),
     ];
+    final page = pages[_onboardingPage];
     final last = _onboardingPage == pages.length - 1;
     return Scaffold(
-      backgroundColor: _leaf,
+      backgroundColor: _paper,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 28, 18),
+          padding: const EdgeInsets.fromLTRB(22, 16, 22, 18),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  const Text(
+                    'AMBERWICK',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    page.$1,
+                    style: const TextStyle(fontWeight: FontWeight.w600, color: _mute),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Container(height: 2, color: _ink),
               Expanded(
                 child: PageView.builder(
                   controller: _onboarding,
                   itemCount: pages.length,
                   onPageChanged: (value) => setState(() => _onboardingPage = value),
                   itemBuilder: (_, index) {
-                    final page = pages[index];
+                    final item = pages[index];
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Spacer(),
-                        Container(
-                          width: 108,
-                          height: 108,
-                          decoration: const BoxDecoration(
-                            color: _berry,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(page.$1, color: _cream, size: 48),
-                        ),
-                        const SizedBox(height: 28),
-                        Text(
-                          page.$2,
-                          textAlign: TextAlign.center,
-                          style: _display(36),
-                        ),
+                        Container(width: 42, height: 8, color: _amber),
+                        const SizedBox(height: 18),
+                        Text(item.$2, style: _display(36)),
                         const SizedBox(height: 14),
                         Text(
-                          page.$3,
-                          textAlign: TextAlign.center,
+                          item.$3,
                           style: const TextStyle(
-                            fontSize: 16,
-                            height: 1.45,
-                            color: _stem,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                            height: 1.5,
+                            color: _mute,
                           ),
                         ),
                         const Spacer(flex: 2),
@@ -273,23 +282,6 @@ class _UserScreenState extends State<UserScreen> {
                   },
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(pages.length, (index) {
-                  final on = index == _onboardingPage;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: on ? 10 : 8,
-                    height: on ? 10 : 8,
-                    decoration: BoxDecoration(
-                      color: on ? _berry : _track,
-                      shape: BoxShape.circle,
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -297,10 +289,10 @@ class _UserScreenState extends State<UserScreen> {
                   onPressed: last
                       ? _finishOnboarding
                       : () => _onboarding.nextPage(
-                            duration: const Duration(milliseconds: 280),
-                            curve: Curves.easeOutCubic,
+                            duration: const Duration(milliseconds: 240),
+                            curve: Curves.easeOut,
                           ),
-                  style: _pill(),
+                  style: _block(),
                   child: Text(last ? 'Begin' : 'Next'),
                 ),
               ),
@@ -308,7 +300,7 @@ class _UserScreenState extends State<UserScreen> {
                 onPressed: _finishOnboarding,
                 child: const Text(
                   'Skip',
-                  style: TextStyle(color: _stem, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: _mute, fontWeight: FontWeight.w500),
                 ),
               ),
             ],
@@ -321,22 +313,30 @@ class _UserScreenState extends State<UserScreen> {
   Widget _shell() {
     final pages = [_home(), _walk(), _four(), _range(), _tablet()];
     return Scaffold(
-      backgroundColor: _leaf,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-              child: _nav(),
+      backgroundColor: _paper,
+      body: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(width: 8, color: _amber),
+                  Expanded(
+                    child: IndexedStack(index: _tab.index, children: pages),
+                  ),
+                ],
+              ),
             ),
-            Expanded(child: IndexedStack(index: _tab.index, children: pages)),
-          ],
-        ),
+          ),
+          _footer(),
+        ],
       ),
     );
   }
 
-  Widget _nav() {
+  Widget _footer() {
     const items = [
       (_Tab.home, 'Home', 'tab-home'),
       (_Tab.walk, 'Walk', 'tab-walk'),
@@ -344,36 +344,37 @@ class _UserScreenState extends State<UserScreen> {
       (_Tab.range, 'Range', 'tab-range'),
       (_Tab.tablet, 'Tablet', 'tab-tablet'),
     ];
+    final bottom = MediaQuery.paddingOf(context).bottom;
     return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: _cream,
-        borderRadius: BorderRadius.circular(28),
+      padding: EdgeInsets.only(bottom: bottom),
+      decoration: const BoxDecoration(
+        color: _sheet,
+        border: Border(top: BorderSide(color: _ink, width: 1.5)),
       ),
       child: Row(
         children: [
-          for (final item in items)
+          for (var i = 0; i < items.length; i++)
             Expanded(
               child: GestureDetector(
-                key: Key(item.$3),
-                onTap: () => setState(() => _tab = item.$1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  height: 36,
+                key: Key(items[i].$3),
+                onTap: () => setState(() => _tab = items[i].$1),
+                child: Container(
+                  height: 48,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: _tab == item.$1 ? _berry : Colors.transparent,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: FittedBox(
-                    child: Text(
-                      item.$2,
-                      style: TextStyle(
-                        fontFamily: 'Fraunces',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _tab == item.$1 ? _cream : _moss,
+                    color: _tab == items[i].$1 ? _amber : _sheet,
+                    border: Border(
+                      left: BorderSide(
+                        color: i == 0 ? Colors.transparent : _rule,
                       ),
+                    ),
+                  ),
+                  child: Text(
+                    items[i].$2,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _ink,
                     ),
                   ),
                 ),
@@ -387,136 +388,97 @@ class _UserScreenState extends State<UserScreen> {
   Widget _home() {
     return _scroll(
       children: [
-        Text('ORCHARD BELL', style: _kicker(), textAlign: TextAlign.center),
+        Text('AMBERWICK', style: _kicker()),
         const SizedBox(height: 8),
-        Text('Ring the practice.', style: _display(34), textAlign: TextAlign.center),
-        const SizedBox(height: 18),
-        Center(
-          child: Container(
-            width: 148,
-            height: 148,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _cream,
-              border: Border.all(color: _moss, width: 2),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('$_rangeMinutes min', style: _display(28)),
-                const Text(
-                  'window',
-                  style: TextStyle(color: _stem, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
+        Text('Open the ledger.', style: _display(32)),
+        const SizedBox(height: 6),
+        Text(
+          'Window $_rangeMinutes min · on this phone',
+          style: const TextStyle(color: _mute, fontSize: 13),
         ),
         const SizedBox(height: 18),
-        Row(
-          children: [
-            Expanded(
-              child: _tile(
-                icon: Icons.directions_walk_rounded,
-                title: 'Walk',
-                body: 'Four steps across the room.',
-                onTap: () => setState(() => _tab = _Tab.walk),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _tile(
-                icon: Icons.water_drop_rounded,
-                title: 'Four Columns',
-                body: 'A rising-column breath.',
-                onTap: () => setState(() => _tab = _Tab.four),
-              ),
-            ),
-          ],
+        _row(
+          code: '01',
+          title: 'Walk',
+          body: 'Four steps around one frame.',
+          onTap: () => setState(() => _tab = _Tab.walk),
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _tile(
-                icon: Icons.timer_outlined,
-                title: 'Range',
-                body: 'Choose the minutes.',
-                onTap: () => setState(() => _tab = _Tab.range),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _tile(
-                icon: Icons.draw_rounded,
-                title: 'Tablet',
-                body: 'A private journal.',
-                onTap: () => setState(() => _tab = _Tab.tablet),
-              ),
-            ),
-          ],
+        _row(
+          code: '02',
+          title: 'Four Columns',
+          body: 'A rising-column breath.',
+          onTap: () => setState(() => _tab = _Tab.four),
+        ),
+        _row(
+          code: '03',
+          title: 'Range',
+          body: 'Set the minutes for this sitting.',
+          onTap: () => setState(() => _tab = _Tab.range),
+        ),
+        _row(
+          code: '04',
+          title: 'Tablet',
+          body: 'File a private note.',
+          onTap: () => setState(() => _tab = _Tab.tablet),
         ),
         const SizedBox(height: 16),
         const Text(
-          'No account. No cloud. No remote AI. Notes stay on this phone.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: _stem, height: 1.4, fontWeight: FontWeight.w500),
+          'No account. No cloud. No remote AI.',
+          style: TextStyle(fontSize: 13, color: _ink, fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
 
   Widget _walk() {
-    final step = _walkSteps[_walkStep];
     return _scroll(
       children: [
-        Text('WALK', style: _kicker(), textAlign: TextAlign.center),
+        Text('WALK', style: _kicker()),
         const SizedBox(height: 8),
-        Text('Cross the room.', style: _display(34), textAlign: TextAlign.center),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(_walkSteps.length, (index) {
-            final on = index == _walkStep;
-            final done = index < _walkStep;
-            return Container(
-              width: on ? 18 : 12,
-              height: on ? 18 : 12,
-              margin: const EdgeInsets.symmetric(horizontal: 6),
-              decoration: BoxDecoration(
-                color: on || done ? _berry : _track,
-                shape: BoxShape.circle,
-                border: Border.all(color: on ? _moss : Colors.transparent, width: 2),
-              ),
-            );
-          }),
-        ),
-        const SizedBox(height: 18),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-          decoration: BoxDecoration(
-            color: _cream,
-            borderRadius: BorderRadius.circular(32),
+        Text('Follow the edge.', style: _display(32)),
+        const SizedBox(height: 16),
+        for (var i = 0; i < _walkSteps.length; i++)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 2),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            color: i == _walkStep ? _amber : _sheet,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    '0${i + 1}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _walkSteps[i].$1,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: _ink,
+                        ),
+                      ),
+                      if (i == _walkStep) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          _walkSteps[i].$2,
+                          style: const TextStyle(fontSize: 14, height: 1.4, color: _ink),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              Text(step.$1, style: _display(32), textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(
-                'Step ${_walkStep + 1} of ${_walkSteps.length}',
-                style: const TextStyle(color: _berry, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                step.$2,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, height: 1.45, color: _stem),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
@@ -524,7 +486,7 @@ class _UserScreenState extends State<UserScreen> {
             onPressed: () => setState(
               () => _walkStep = (_walkStep + 1) % _walkSteps.length,
             ),
-            style: _pill(),
+            style: _block(),
             child: Text(
               _walkStep == _walkSteps.length - 1 ? 'Walk again' : 'Next step',
             ),
@@ -538,18 +500,22 @@ class _UserScreenState extends State<UserScreen> {
     const labels = ['Inhale', 'Hold', 'Exhale', 'Rest'];
     return _scroll(
       children: [
-        Text('FOUR COLUMNS', style: _kicker(), textAlign: TextAlign.center),
+        Text('FOUR COLUMNS', style: _kicker()),
         const SizedBox(height: 8),
-        Text('Let them rise.', style: _display(34), textAlign: TextAlign.center),
+        Text('Raise one line.', style: _display(32)),
         const SizedBox(height: 8),
         const Text(
-          'Four vessels. The active one fills from the bottom, four counts each phase.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15, height: 1.4, color: _stem),
+          'A plot of four columns. The active column rises for four counts.',
+          style: TextStyle(fontSize: 14, height: 1.45, color: _mute),
         ),
-        const SizedBox(height: 20),
-        SizedBox(
+        const SizedBox(height: 16),
+        Container(
           height: 230,
+          padding: const EdgeInsets.fromLTRB(10, 12, 10, 8),
+          decoration: BoxDecoration(
+            color: _sheet,
+            border: Border.all(color: _ink, width: 1.5),
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: List.generate(4, (index) {
@@ -563,36 +529,29 @@ class _UserScreenState extends State<UserScreen> {
                       Expanded(
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            final fill = active
-                                ? constraints.maxHeight * (0.22 + rise * 0.78)
-                                : constraints.maxHeight * 0.16;
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: _track,
-                                borderRadius: BorderRadius.circular(28),
-                              ),
+                            final height = active
+                                ? constraints.maxHeight * (0.12 + rise * 0.88)
+                                : constraints.maxHeight * 0.08;
+                            return Align(
                               alignment: Alignment.bottomCenter,
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 280),
                                 curve: Curves.easeOut,
-                                height: fill,
+                                height: height,
                                 width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: active ? _berry : const Color(0xFF8FB58A),
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
+                                color: active ? _amber : _rule,
                               ),
                             );
                           },
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         labels[index],
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: active ? _berry : _stem,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: active ? _ink : _mute,
                         ),
                       ),
                     ],
@@ -602,11 +561,10 @@ class _UserScreenState extends State<UserScreen> {
             }),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         Text(
           _breathing ? '${labels[_breathPhase]} · $_breathSeconds' : 'Ready',
-          textAlign: TextAlign.center,
-          style: _display(26),
+          style: _display(22),
         ),
         const SizedBox(height: 14),
         SizedBox(
@@ -614,7 +572,7 @@ class _UserScreenState extends State<UserScreen> {
           child: FilledButton(
             key: const Key('breath-toggle'),
             onPressed: _breathing ? _stopBreath : _startBreath,
-            style: _pill(),
+            style: _block(),
             child: Text(_breathing ? 'End breath' : 'Start Four Columns'),
           ),
         ),
@@ -625,60 +583,50 @@ class _UserScreenState extends State<UserScreen> {
   Widget _range() {
     return _scroll(
       children: [
-        Text('RANGE', style: _kicker(), textAlign: TextAlign.center),
+        Text('RANGE', style: _kicker()),
         const SizedBox(height: 8),
-        Text('How long to ring.', style: _display(34), textAlign: TextAlign.center),
+        Text('Minutes on file.', style: _display(32)),
         const SizedBox(height: 8),
         const Text(
-          'This choice is stored only on your device.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: _stem, fontWeight: FontWeight.w500),
+          'Stored only on this device.',
+          style: TextStyle(color: _mute, fontSize: 13),
         ),
-        const SizedBox(height: 28),
-        Row(
-          children: [
-            for (final minute in _ranges)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Material(
-                      color: _rangeMinutes == minute ? _berry : _cream,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        key: Key('range-$minute'),
-                        customBorder: const CircleBorder(),
-                        onTap: () => _saveRange(minute),
-                        child: Center(
-                          child: Text(
-                            '$minute',
-                            style: TextStyle(
-                              fontFamily: 'Fraunces',
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: _rangeMinutes == minute ? _cream : _moss,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+        const SizedBox(height: 12),
+        for (final minute in _ranges)
+          InkWell(
+            key: Key('range-$minute'),
+            onTap: () => _saveRange(minute),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+              decoration: BoxDecoration(
+                color: _rangeMinutes == minute ? _amber : Colors.transparent,
+                border: const Border(bottom: BorderSide(color: _rule)),
               ),
-          ],
-        ),
-        const SizedBox(height: 22),
-        Text(
-          '$_rangeMinutes minutes',
-          textAlign: TextAlign.center,
-          style: _display(22),
-        ),
-        const SizedBox(height: 8),
+              child: Row(
+                children: [
+                  Text(
+                    '$minute',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'minutes',
+                    style: TextStyle(color: _mute, fontSize: 13),
+                  ),
+                  const Spacer(),
+                  if (_rangeMinutes == minute)
+                    const Text(
+                      'SET',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
         const Text(
-          'A range is permission to stop. It is not a score.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15, height: 1.45, color: _stem),
+          'A range is a limit you give yourself, not a mark to beat.',
+          style: TextStyle(fontSize: 14, height: 1.45, color: _mute),
         ),
       ],
     );
@@ -687,35 +635,35 @@ class _UserScreenState extends State<UserScreen> {
   Widget _tablet() {
     return _scroll(
       children: [
-        Text('TABLET', style: _kicker(), textAlign: TextAlign.center),
+        Text('TABLET', style: _kicker()),
         const SizedBox(height: 8),
-        Text('Private journal.', style: _display(34), textAlign: TextAlign.center),
-        const SizedBox(height: 16),
+        Text('Private journal.', style: _display(32)),
+        const SizedBox(height: 14),
         TextField(
           key: const Key('tablet-field'),
           controller: _noteController,
           minLines: 4,
           maxLines: 6,
-          style: const TextStyle(color: _moss, fontSize: 16, height: 1.45),
-          cursorColor: _berry,
+          style: const TextStyle(color: _ink, fontSize: 15, height: 1.45),
+          cursorColor: _ink,
           textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(
-            hintText: 'What did the walk leave with you?',
-            hintStyle: const TextStyle(color: _stem),
+          decoration: const InputDecoration(
+            hintText: 'File what the walk left behind.',
+            hintStyle: TextStyle(color: _mute),
             filled: true,
-            fillColor: _cream,
-            contentPadding: const EdgeInsets.fromLTRB(18, 16, 16, 16),
+            fillColor: _sheet,
+            contentPadding: EdgeInsets.all(14),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: const BorderSide(color: _moss, width: 1.2),
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: _ink, width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: const BorderSide(color: _moss, width: 1.2),
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: _ink, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: const BorderSide(color: _berry, width: 1.8),
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: _amber, width: 2),
             ),
           ),
         ),
@@ -725,46 +673,40 @@ class _UserScreenState extends State<UserScreen> {
           child: FilledButton(
             key: const Key('tablet-save'),
             onPressed: _saveNote,
-            style: _pill(),
+            style: _block(),
             child: const Text('Save note'),
           ),
         ),
         const SizedBox(height: 22),
         Text(
-          _notes.isEmpty ? 'Nothing kept yet' : '${_notes.length} on this phone',
+          _notes.isEmpty ? 'FILE EMPTY' : 'ON THIS DEVICE  ${_notes.length}',
           style: _kicker(),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         if (_notes.isEmpty)
           const Text(
-            'The first note stays on this device.',
-            style: TextStyle(color: _stem, fontSize: 15),
+            'The first line stays on this phone.',
+            style: TextStyle(color: _mute, fontSize: 14),
           )
         else
           for (final note in _notes.take(6))
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: _cream,
-                borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: _rule)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     _stamp(note.time),
-                    style: const TextStyle(
-                      color: _berry,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(fontSize: 11, color: _mute),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     note.body,
-                    style: const TextStyle(color: _moss, fontSize: 15, height: 1.35),
+                    style: const TextStyle(fontSize: 14, height: 1.4, color: _ink),
                   ),
                 ],
               ),
@@ -775,84 +717,85 @@ class _UserScreenState extends State<UserScreen> {
 
   Widget _scroll({required List<Widget> children}) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
       children: children,
     );
   }
 
-  Widget _tile({
-    required IconData icon,
+  Widget _row({
+    required String code,
     required String title,
     required String body,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: _cream,
-      borderRadius: BorderRadius.circular(26),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(26),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  color: _leaf,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: _moss, size: 20),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: _ink, width: 1)),
+        ),
+        child: Row(
+          children: [
+            Container(width: 8, height: 28, color: _amber),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 28,
+              child: Text(
+                code,
                 style: const TextStyle(
-                  fontFamily: 'Fraunces',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: _moss,
+                  fontWeight: FontWeight.w600,
+                  color: _ink,
+                  fontSize: 13,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                body,
-                style: const TextStyle(fontSize: 12.5, height: 1.3, color: _stem),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    body,
+                    style: const TextStyle(fontSize: 12, color: _mute),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const Text('>', style: TextStyle(fontWeight: FontWeight.w600)),
+          ],
         ),
       ),
     );
   }
 
   TextStyle _kicker() => const TextStyle(
-        fontFamily: 'Fraunces',
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.8,
-        color: _berry,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.6,
+        color: _mute,
       );
 
   TextStyle _display(double size) => TextStyle(
-        fontFamily: 'Fraunces',
         fontSize: size,
-        height: 1.02,
-        fontWeight: FontWeight.w700,
-        color: _moss,
+        height: 1.05,
+        fontWeight: FontWeight.w600,
+        color: _ink,
       );
 
-  ButtonStyle _pill() => FilledButton.styleFrom(
-        backgroundColor: _berry,
-        foregroundColor: _cream,
-        shape: const StadiumBorder(),
+  ButtonStyle _block() => FilledButton.styleFrom(
+        backgroundColor: _ink,
+        foregroundColor: _amber,
+        shape: const RoundedRectangleBorder(),
         padding: const EdgeInsets.symmetric(vertical: 16),
         textStyle: const TextStyle(
-          fontFamily: 'Fraunces',
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
+          fontFamily: 'IBM Plex Mono',
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
         ),
       );
 
@@ -873,6 +816,6 @@ class _UserScreenState extends State<UserScreen> {
     ];
     final h = time.hour.toString().padLeft(2, '0');
     final m = time.minute.toString().padLeft(2, '0');
-    return '${months[time.month - 1]} ${time.day} · $h:$m';
+    return '${months[time.month - 1]} ${time.day}  $h:$m';
   }
 }

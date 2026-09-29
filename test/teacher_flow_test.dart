@@ -11,7 +11,7 @@ void main() {
     await tester.pumpWidget(const UserScreen());
     await tester.pumpAndSettle();
 
-    expect(find.text('A teacher\nin your pocket.'), findsOneWidget);
+    expect(find.text('A teacher\non this phone.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('onboarding-advance')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('onboarding-advance')));
@@ -20,20 +20,20 @@ void main() {
     await tester.tap(find.byKey(const Key('onboarding-advance')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ring the practice.'), findsOneWidget);
+    expect(find.text('Open the ledger.'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-walk')));
     await tester.pumpAndSettle();
-    expect(find.text('Settle'), findsOneWidget);
+    expect(find.text('Stop where you are. Let both feet go quiet.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Look'), findsOneWidget);
+    expect(find.text('Choose one rectangle: a window, a door, or a picture.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Cross'), findsOneWidget);
+    expect(find.text('Walk the edge of that rectangle, then return.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Choose'), findsOneWidget);
+    expect(find.text('Name one thing that is different now that you are back.'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-four')));
     await tester.pumpAndSettle();
@@ -46,9 +46,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('tab-range')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('range-9')));
+    await tester.tap(find.byKey(const Key('range-15')));
     await tester.pumpAndSettle();
-    expect(find.text('9'), findsOneWidget);
+    expect(find.text('15'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-tablet')));
     await tester.pumpAndSettle();
@@ -56,6 +56,6 @@ void main() {
     await tester.tap(find.byKey(const Key('tablet-save')));
     await tester.pumpAndSettle();
     expect(find.text('Counted three objects.'), findsOneWidget);
-    expect(find.text('Kept on this phone. Private journal.'), findsOneWidget);
+    expect(find.text('Filed on this device. Private journal.'), findsOneWidget);
   });
 }
