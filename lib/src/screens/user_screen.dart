@@ -33,14 +33,14 @@ class _Note {
 }
 
 class _UserScreenState extends State<UserScreen> {
-  static const _paper = Color(0xFFE7EBF2);
-  static const _sheet = Color(0xFFF4F6FA);
-  static const _ink = Color(0xFF16181D);
-  static const _amber = Color(0xFFF0A202);
-  static const _rule = Color(0xFFC5CCD6);
-  static const _mute = Color(0xFF5C6570);
+  static const _tide = Color(0xFF0E6E6A);
+  static const _deep = Color(0xFF084E4C);
+  static const _sand = Color(0xFFFFF6E8);
+  static const _coral = Color(0xFFE86A4A);
+  static const _foam = Color(0xFFD5EBE4);
+  static const _ink = Color(0xFF143330);
 
-  static const _ranges = [5, 10, 15, 25];
+  static const _ranges = [6, 12, 18, 30];
 
   final _noteController = TextEditingController();
   final _onboarding = PageController();
@@ -51,7 +51,7 @@ class _UserScreenState extends State<UserScreen> {
   _Tab _tab = _Tab.home;
   int _onboardingPage = 0;
   int _walkStep = 0;
-  int _rangeMinutes = 10;
+  int _rangeMinutes = 12;
   int _breathPhase = 0;
   int _breathSeconds = 4;
   bool _breathing = false;
@@ -60,20 +60,20 @@ class _UserScreenState extends State<UserScreen> {
 
   final _walkSteps = const [
     (
-      'Still',
-      'Stop where you are. Let both feet go quiet.',
+      'Pause',
+      'Rest one hand on something solid.',
     ),
     (
-      'Frame',
-      'Choose one rectangle: a window, a door, or a picture.',
+      'Turn',
+      'Turn to face a different wall.',
     ),
     (
-      'Travel',
-      'Walk the edge of that rectangle, then return.',
+      'Drift',
+      'Take six slow steps in that direction.',
     ),
     (
-      'Note',
-      'Name one thing that is different now that you are back.',
+      'Land',
+      'Stop and name the next useful thing.',
     ),
   ];
 
@@ -85,7 +85,7 @@ class _UserScreenState extends State<UserScreen> {
 
   Future<void> _loadLocalState() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('amberwick_notes') ?? '[]';
+    final raw = prefs.getString('saltpaper_notes') ?? '[]';
     try {
       final decoded = jsonDecode(raw) as List<dynamic>;
       _notes = decoded
@@ -98,26 +98,26 @@ class _UserScreenState extends State<UserScreen> {
     if (!mounted) return;
     setState(() {
       _prefs = prefs;
-      _onboarded = prefs.getBool('amberwick_onboarded') ?? false;
-      _rangeMinutes = prefs.getInt('amberwick_range') ?? 10;
+      _onboarded = prefs.getBool('saltpaper_onboarded') ?? false;
+      _rangeMinutes = prefs.getInt('saltpaper_range') ?? 12;
       _ready = true;
     });
   }
 
   Future<void> _finishOnboarding() async {
-    await _prefs?.setBool('amberwick_onboarded', true);
+    await _prefs?.setBool('saltpaper_onboarded', true);
     if (mounted) setState(() => _onboarded = true);
   }
 
   Future<void> _saveRange(int minutes) async {
     setState(() => _rangeMinutes = minutes);
-    await _prefs?.setInt('amberwick_range', minutes);
+    await _prefs?.setInt('saltpaper_range', minutes);
   }
 
   Future<void> _saveNote() async {
     final body = _noteController.text.trim();
     if (body.isEmpty) {
-      _toast('Write a line before you file it.');
+      _toast('Write a line before you stamp it.');
       return;
     }
     final note = _Note(body: body, time: DateTime.now());
@@ -126,10 +126,10 @@ class _UserScreenState extends State<UserScreen> {
       _noteController.clear();
     });
     await _prefs?.setString(
-      'amberwick_notes',
+      'saltpaper_notes',
       jsonEncode(_notes.map((note) => note.toJson()).toList()),
     );
-    _toast('Filed on this device. Private journal.');
+    _toast('Stamped on this phone. Private journal.');
   }
 
   void _toast(String message) {
@@ -176,29 +176,30 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Amberwick',
+      title: 'Saltpaper',
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: _messengerKey,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: _paper,
-        fontFamily: 'IBM Plex Mono',
-        colorScheme: ColorScheme.fromSeed(seedColor: _amber, surface: _paper),
-        splashFactory: NoSplash.splashFactory,
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: _ink,
+        scaffoldBackgroundColor: _tide,
+        fontFamily: 'Manrope',
+        colorScheme: ColorScheme.fromSeed(seedColor: _coral, surface: _tide),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: _sand,
           behavior: SnackBarBehavior.floating,
-          contentTextStyle: TextStyle(
-            color: _amber,
-            fontFamily: 'IBM Plex Mono',
-            fontSize: 13,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          contentTextStyle: const TextStyle(
+            color: _ink,
+            fontFamily: 'Manrope',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
       home: !_ready
           ? const Scaffold(
-              backgroundColor: _paper,
-              body: Center(child: CircularProgressIndicator(color: _ink)),
+              backgroundColor: _tide,
+              body: Center(child: CircularProgressIndicator(color: _sand)),
             )
           : _onboarded
               ? _shell()
@@ -209,71 +210,61 @@ class _UserScreenState extends State<UserScreen> {
   Widget _onboardingScreen() {
     const pages = [
       (
-        '01',
-        'A teacher\non this phone.',
-        'Amberwick files the whole lesson on the device. Nothing is sent away.',
+        'A paper teacher\nfor this phone.',
+        'Saltpaper keeps the whole lesson on the device.',
       ),
       (
-        '02',
-        'Walk, then\nraise a column.',
+        'A walk, then\nfour columns.',
         'Walk is four steps. Four Columns is a rising-column breath.',
       ),
       (
-        '03',
-        'File the note\nhere.',
+        'Stamp the note\nand leave it.',
         'Tablet is a private journal. No account. No cloud. No remote AI.',
       ),
     ];
-    final page = pages[_onboardingPage];
     final last = _onboardingPage == pages.length - 1;
     return Scaffold(
-      backgroundColor: _paper,
+      backgroundColor: _tide,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 16, 22, 18),
+          padding: const EdgeInsets.fromLTRB(22, 12, 22, 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Text(
-                    'AMBERWICK',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    page.$1,
-                    style: const TextStyle(fontWeight: FontWeight.w600, color: _mute),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Container(height: 2, color: _ink),
               Expanded(
                 child: PageView.builder(
                   controller: _onboarding,
                   itemCount: pages.length,
                   onPageChanged: (value) => setState(() => _onboardingPage = value),
                   itemBuilder: (_, index) {
-                    final item = pages[index];
+                    final page = pages[index];
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Spacer(),
-                        Container(width: 42, height: 8, color: _amber),
-                        const SizedBox(height: 18),
-                        Text(item.$2, style: _display(36)),
-                        const SizedBox(height: 14),
-                        Text(
-                          item.$3,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            height: 1.5,
-                            color: _mute,
+                        _ticket(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(22, 26, 22, 26),
+                            child: Column(
+                              children: [
+                                _stamp('0${index + 1}'),
+                                const SizedBox(height: 18),
+                                Text(
+                                  page.$1,
+                                  textAlign: TextAlign.center,
+                                  style: _display(30, _ink),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  page.$2,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    height: 1.45,
+                                    color: _deep,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const Spacer(flex: 2),
@@ -282,6 +273,22 @@ class _UserScreenState extends State<UserScreen> {
                   },
                 ),
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(pages.length, (index) {
+                  final on = index == _onboardingPage;
+                  return Container(
+                    width: on ? 18 : 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    decoration: BoxDecoration(
+                      color: on ? _coral : _foam.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -289,10 +296,10 @@ class _UserScreenState extends State<UserScreen> {
                   onPressed: last
                       ? _finishOnboarding
                       : () => _onboarding.nextPage(
-                            duration: const Duration(milliseconds: 240),
+                            duration: const Duration(milliseconds: 260),
                             curve: Curves.easeOut,
                           ),
-                  style: _block(),
+                  style: _coralButton(),
                   child: Text(last ? 'Begin' : 'Next'),
                 ),
               ),
@@ -300,7 +307,7 @@ class _UserScreenState extends State<UserScreen> {
                 onPressed: _finishOnboarding,
                 child: const Text(
                   'Skip',
-                  style: TextStyle(color: _mute, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: _foam, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -313,30 +320,22 @@ class _UserScreenState extends State<UserScreen> {
   Widget _shell() {
     final pages = [_home(), _walk(), _four(), _range(), _tablet()];
     return Scaffold(
-      backgroundColor: _paper,
-      body: Column(
-        children: [
-          Expanded(
-            child: SafeArea(
-              bottom: false,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(width: 8, color: _amber),
-                  Expanded(
-                    child: IndexedStack(index: _tab.index, children: pages),
-                  ),
-                ],
-              ),
+      backgroundColor: _tide,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(child: IndexedStack(index: _tab.index, children: pages)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              child: _dock(),
             ),
-          ),
-          _footer(),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _footer() {
+  Widget _dock() {
     const items = [
       (_Tab.home, 'Home', 'tab-home'),
       (_Tab.walk, 'Walk', 'tab-walk'),
@@ -344,37 +343,36 @@ class _UserScreenState extends State<UserScreen> {
       (_Tab.range, 'Range', 'tab-range'),
       (_Tab.tablet, 'Tablet', 'tab-tablet'),
     ];
-    final bottom = MediaQuery.paddingOf(context).bottom;
     return Container(
-      padding: EdgeInsets.only(bottom: bottom),
-      decoration: const BoxDecoration(
-        color: _sheet,
-        border: Border(top: BorderSide(color: _ink, width: 1.5)),
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: _sand,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Color(0x33000000), blurRadius: 16, offset: Offset(0, 6)),
+        ],
       ),
       child: Row(
         children: [
-          for (var i = 0; i < items.length; i++)
+          for (final item in items)
             Expanded(
               child: GestureDetector(
-                key: Key(items[i].$3),
-                onTap: () => setState(() => _tab = items[i].$1),
+                key: Key(item.$3),
+                onTap: () => setState(() => _tab = item.$1),
                 child: Container(
-                  height: 48,
+                  height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: _tab == items[i].$1 ? _amber : _sheet,
-                    border: Border(
-                      left: BorderSide(
-                        color: i == 0 ? Colors.transparent : _rule,
-                      ),
-                    ),
+                    color: _tab == item.$1 ? _coral : Colors.transparent,
+                    borderRadius: BorderRadius.circular(11),
                   ),
                   child: Text(
-                    items[i].$2,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: _ink,
+                    item.$2,
+                    style: TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: _tab == item.$1 ? _sand : _tide,
                     ),
                   ),
                 ),
@@ -388,107 +386,127 @@ class _UserScreenState extends State<UserScreen> {
   Widget _home() {
     return _scroll(
       children: [
-        Text('AMBERWICK', style: _kicker()),
-        const SizedBox(height: 8),
-        Text('Open the ledger.', style: _display(32)),
+        Text('SALTPAPER', style: _kicker(_foam)),
         const SizedBox(height: 6),
-        Text(
-          'Window $_rangeMinutes min · on this phone',
-          style: const TextStyle(color: _mute, fontSize: 13),
-        ),
-        const SizedBox(height: 18),
-        _row(
-          code: '01',
-          title: 'Walk',
-          body: 'Four steps around one frame.',
-          onTap: () => setState(() => _tab = _Tab.walk),
-        ),
-        _row(
-          code: '02',
-          title: 'Four Columns',
-          body: 'A rising-column breath.',
-          onTap: () => setState(() => _tab = _Tab.four),
-        ),
-        _row(
-          code: '03',
-          title: 'Range',
-          body: 'Set the minutes for this sitting.',
-          onTap: () => setState(() => _tab = _Tab.range),
-        ),
-        _row(
-          code: '04',
-          title: 'Tablet',
-          body: 'File a private note.',
-          onTap: () => setState(() => _tab = _Tab.tablet),
-        ),
-        const SizedBox(height: 16),
+        Text('Your next ticket.', style: _display(32, _sand)),
+        const SizedBox(height: 8),
         const Text(
           'No account. No cloud. No remote AI.',
-          style: TextStyle(fontSize: 13, color: _ink, fontWeight: FontWeight.w500),
+          style: TextStyle(color: _foam, fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        const SizedBox(height: 16),
+        _ticket(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('THIS SITTING', style: _kicker(_coral)),
+                          const SizedBox(height: 4),
+                          Text('$_rangeMinutes min ticket', style: _display(24, _ink)),
+                        ],
+                      ),
+                    ),
+                    _stamp('HERE'),
+                  ],
+                ),
+              ),
+              _tear(),
+              _link(
+                title: 'Walk',
+                body: 'Four steps, one direction.',
+                onTap: () => setState(() => _tab = _Tab.walk),
+              ),
+              _tear(),
+              _link(
+                title: 'Four Columns',
+                body: 'A rising-column breath.',
+                onTap: () => setState(() => _tab = _Tab.four),
+              ),
+              _tear(),
+              _link(
+                title: 'Range',
+                body: 'Pick the length of the ticket.',
+                onTap: () => setState(() => _tab = _Tab.range),
+              ),
+              _tear(),
+              _link(
+                title: 'Tablet',
+                body: 'Stamp a private note.',
+                onTap: () => setState(() => _tab = _Tab.tablet),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _walk() {
+    final step = _walkSteps[_walkStep];
     return _scroll(
       children: [
-        Text('WALK', style: _kicker()),
-        const SizedBox(height: 8),
-        Text('Follow the edge.', style: _display(32)),
-        const SizedBox(height: 16),
-        for (var i = 0; i < _walkSteps.length; i++)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 2),
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-            color: i == _walkStep ? _amber : _sheet,
-            child: Row(
+        Text('WALK', style: _kicker(_foam)),
+        const SizedBox(height: 6),
+        Text('One direction.', style: _display(32, _sand)),
+        const SizedBox(height: 14),
+        Row(
+          children: List.generate(_walkSteps.length, (index) {
+            final on = index == _walkStep;
+            return Expanded(
+              child: Container(
+                margin: EdgeInsets.only(right: index == _walkSteps.length - 1 ? 0 : 6),
+                height: 8,
+                decoration: BoxDecoration(
+                  color: on ? _coral : _foam.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 14),
+        _ticket(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 28,
-                  child: Text(
-                    '0${i + 1}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                Text('STUB 0${_walkStep + 1}', style: _kicker(_coral)),
+                const SizedBox(height: 8),
+                Text(step.$1, style: _display(34, _ink)),
+                const SizedBox(height: 8),
+                Text(
+                  step.$2,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.4,
+                    color: _deep,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _walkSteps[i].$1,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: _ink,
-                        ),
-                      ),
-                      if (i == _walkStep) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          _walkSteps[i].$2,
-                          style: const TextStyle(fontSize: 14, height: 1.4, color: _ink),
-                        ),
-                      ],
-                    ],
+                const SizedBox(height: 16),
+                _tear(),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    key: const Key('walk-advance'),
+                    onPressed: () => setState(
+                      () => _walkStep = (_walkStep + 1) % _walkSteps.length,
+                    ),
+                    style: _coralButton(),
+                    child: Text(
+                      _walkStep == _walkSteps.length - 1 ? 'Walk again' : 'Next step',
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            key: const Key('walk-advance'),
-            onPressed: () => setState(
-              () => _walkStep = (_walkStep + 1) % _walkSteps.length,
-            ),
-            style: _block(),
-            child: Text(
-              _walkStep == _walkSteps.length - 1 ? 'Walk again' : 'Next step',
             ),
           ),
         ),
@@ -500,80 +518,95 @@ class _UserScreenState extends State<UserScreen> {
     const labels = ['Inhale', 'Hold', 'Exhale', 'Rest'];
     return _scroll(
       children: [
-        Text('FOUR COLUMNS', style: _kicker()),
-        const SizedBox(height: 8),
-        Text('Raise one line.', style: _display(32)),
-        const SizedBox(height: 8),
-        const Text(
-          'A plot of four columns. The active column rises for four counts.',
-          style: TextStyle(fontSize: 14, height: 1.45, color: _mute),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          height: 230,
-          padding: const EdgeInsets.fromLTRB(10, 12, 10, 8),
-          decoration: BoxDecoration(
-            color: _sheet,
-            border: Border.all(color: _ink, width: 1.5),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(4, (index) {
-              final active = _breathing && index == _breathPhase;
-              final rise = active ? (5 - _breathSeconds) / 4 : 0.0;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final height = active
-                                ? constraints.maxHeight * (0.12 + rise * 0.88)
-                                : constraints.maxHeight * 0.08;
-                            return Align(
-                              alignment: Alignment.bottomCenter,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 280),
-                                curve: Curves.easeOut,
-                                height: height,
-                                width: double.infinity,
-                                color: active ? _amber : _rule,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        labels[index],
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: active ? _ink : _mute,
-                        ),
-                      ),
-                    ],
+        Text('FOUR COLUMNS', style: _kicker(_foam)),
+        const SizedBox(height: 6),
+        Text('Let one rise.', style: _display(32, _sand)),
+        const SizedBox(height: 14),
+        _ticket(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Four windows. The active column rises through four counts.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: _deep,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
-            }),
-          ),
-        ),
-        const SizedBox(height: 14),
-        Text(
-          _breathing ? '${labels[_breathPhase]} · $_breathSeconds' : 'Ready',
-          style: _display(22),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            key: const Key('breath-toggle'),
-            onPressed: _breathing ? _stopBreath : _startBreath,
-            style: _block(),
-            child: Text(_breathing ? 'End breath' : 'Start Four Columns'),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 200,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: List.generate(4, (index) {
+                      final active = _breathing && index == _breathPhase;
+                      final rise = active ? (5 - _breathSeconds) / 4 : 0.0;
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final height = active
+                                        ? constraints.maxHeight * (0.16 + rise * 0.84)
+                                        : constraints.maxHeight * 0.1;
+                                    return Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 280),
+                                        curve: Curves.easeOut,
+                                        height: height,
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: active ? _coral : _foam,
+                                          borderRadius: const BorderRadius.vertical(
+                                            top: Radius.circular(14),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                labels[index],
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: active ? _coral : _deep,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _breathing ? '${labels[_breathPhase]} · $_breathSeconds' : 'Ready',
+                  style: _display(22, _ink),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    key: const Key('breath-toggle'),
+                    onPressed: _breathing ? _stopBreath : _startBreath,
+                    style: _coralButton(),
+                    child: Text(_breathing ? 'End breath' : 'Start Four Columns'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -583,50 +616,63 @@ class _UserScreenState extends State<UserScreen> {
   Widget _range() {
     return _scroll(
       children: [
-        Text('RANGE', style: _kicker()),
-        const SizedBox(height: 8),
-        Text('Minutes on file.', style: _display(32)),
-        const SizedBox(height: 8),
-        const Text(
-          'Stored only on this device.',
-          style: TextStyle(color: _mute, fontSize: 13),
-        ),
-        const SizedBox(height: 12),
-        for (final minute in _ranges)
-          InkWell(
-            key: Key('range-$minute'),
-            onTap: () => _saveRange(minute),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              decoration: BoxDecoration(
-                color: _rangeMinutes == minute ? _amber : Colors.transparent,
-                border: const Border(bottom: BorderSide(color: _rule)),
+        Text('RANGE', style: _kicker(_foam)),
+        const SizedBox(height: 6),
+        Text('Ticket length.', style: _display(32, _sand)),
+        const SizedBox(height: 14),
+        _ticket(
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(18, 16, 18, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Stored only on this device.',
+                    style: TextStyle(color: _deep, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
-              child: Row(
-                children: [
-                  Text(
-                    '$minute',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'minutes',
-                    style: TextStyle(color: _mute, fontSize: 13),
-                  ),
-                  const Spacer(),
-                  if (_rangeMinutes == minute)
-                    const Text(
-                      'SET',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              for (final minute in _ranges)
+                InkWell(
+                  key: Key('range-$minute'),
+                  onTap: () => _saveRange(minute),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    color: _rangeMinutes == minute ? _coral : Colors.transparent,
+                    child: Row(
+                      children: [
+                        Text(
+                          '$minute',
+                          style: TextStyle(
+                            fontFamily: 'Manrope',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: _rangeMinutes == minute ? _sand : _ink,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'min',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: _rangeMinutes == minute ? _sand : _deep,
+                          ),
+                        ),
+                      ],
                     ),
-                ],
+                  ),
+                ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(18, 12, 18, 16),
+                child: Text(
+                  'A range is how long the ticket lasts, not a score.',
+                  style: TextStyle(color: _deep, height: 1.4, fontWeight: FontWeight.w600),
+                ),
               ),
-            ),
+            ],
           ),
-        const SizedBox(height: 16),
-        const Text(
-          'A range is a limit you give yourself, not a mark to beat.',
-          style: TextStyle(fontSize: 14, height: 1.45, color: _mute),
         ),
       ],
     );
@@ -635,80 +681,92 @@ class _UserScreenState extends State<UserScreen> {
   Widget _tablet() {
     return _scroll(
       children: [
-        Text('TABLET', style: _kicker()),
-        const SizedBox(height: 8),
-        Text('Private journal.', style: _display(32)),
+        Text('TABLET', style: _kicker(_foam)),
+        const SizedBox(height: 6),
+        Text('Private journal.', style: _display(32, _sand)),
         const SizedBox(height: 14),
-        TextField(
-          key: const Key('tablet-field'),
-          controller: _noteController,
-          minLines: 4,
-          maxLines: 6,
-          style: const TextStyle(color: _ink, fontSize: 15, height: 1.45),
-          cursorColor: _ink,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            hintText: 'File what the walk left behind.',
-            hintStyle: TextStyle(color: _mute),
-            filled: true,
-            fillColor: _sheet,
-            contentPadding: EdgeInsets.all(14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: _ink, width: 1.5),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: _ink, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: _amber, width: 2),
+        _ticket(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                TextField(
+                  key: const Key('tablet-field'),
+                  controller: _noteController,
+                  minLines: 4,
+                  maxLines: 6,
+                  style: const TextStyle(
+                    color: _ink,
+                    fontSize: 16,
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  cursorColor: _coral,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    hintText: 'What should this ticket remember?',
+                    hintStyle: TextStyle(color: _deep.withValues(alpha: 0.55)),
+                    filled: true,
+                    fillColor: _foam.withValues(alpha: 0.45),
+                    contentPadding: const EdgeInsets.all(14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _coral, width: 1.6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    key: const Key('tablet-save'),
+                    onPressed: _saveNote,
+                    style: _coralButton(),
+                    child: const Text('Save note'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            key: const Key('tablet-save'),
-            onPressed: _saveNote,
-            style: _block(),
-            child: const Text('Save note'),
-          ),
-        ),
-        const SizedBox(height: 22),
-        Text(
-          _notes.isEmpty ? 'FILE EMPTY' : 'ON THIS DEVICE  ${_notes.length}',
-          style: _kicker(),
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
         if (_notes.isEmpty)
           const Text(
-            'The first line stays on this phone.',
-            style: TextStyle(color: _mute, fontSize: 14),
+            'No stamp yet. The first note stays on this phone.',
+            style: TextStyle(color: _foam, fontWeight: FontWeight.w600),
           )
         else
           for (final note in _notes.take(6))
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: _rule)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _stamp(note.time),
-                    style: const TextStyle(fontSize: 11, color: _mute),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _ticket(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_stampTime(note.time), style: _kicker(_coral)),
+                      const SizedBox(height: 6),
+                      Text(
+                        note.body,
+                        style: const TextStyle(
+                          color: _ink,
+                          fontSize: 15,
+                          height: 1.35,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    note.body,
-                    style: const TextStyle(fontSize: 14, height: 1.4, color: _ink),
-                  ),
-                ],
+                ),
               ),
             ),
       ],
@@ -717,89 +775,148 @@ class _UserScreenState extends State<UserScreen> {
 
   Widget _scroll({required List<Widget> children}) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 12),
       children: children,
     );
   }
 
-  Widget _row({
-    required String code,
+  Widget _ticket({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _sand,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _tear() {
+    return SizedBox(
+      height: 18,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              14,
+              (_) => Container(
+                width: 5,
+                height: 5,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: const BoxDecoration(color: _tide, shape: BoxShape.circle),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -9,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: const BoxDecoration(color: _tide, shape: BoxShape.circle),
+            ),
+          ),
+          Positioned(
+            right: -9,
+            child: Container(
+              width: 18,
+              height: 18,
+              decoration: const BoxDecoration(color: _tide, shape: BoxShape.circle),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stamp(String label) {
+    return Container(
+      width: 64,
+      height: 64,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: _coral, width: 2),
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: _coral,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          height: 1.1,
+        ),
+      ),
+    );
+  }
+
+  Widget _link({
     required String title,
     required String body,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: _ink, width: 1)),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 12, 16, 12),
         child: Row(
           children: [
-            Container(width: 8, height: 28, color: _amber),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 28,
-              child: Text(
-                code,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: _ink,
-                  fontSize: 13,
-                ),
-              ),
-            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+                  Text(title, style: _display(18, _ink)),
                   const SizedBox(height: 2),
                   Text(
                     body,
-                    style: const TextStyle(fontSize: 12, color: _mute),
+                    style: const TextStyle(
+                      color: _deep,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
             ),
-            const Text('>', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Icon(Icons.arrow_forward_rounded, color: _coral, size: 18),
           ],
         ),
       ),
     );
   }
 
-  TextStyle _kicker() => const TextStyle(
+  TextStyle _kicker(Color color) => TextStyle(
+        fontFamily: 'Manrope',
         fontSize: 11,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.6,
-        color: _mute,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.5,
+        color: color,
       );
 
-  TextStyle _display(double size) => TextStyle(
+  TextStyle _display(double size, Color color) => TextStyle(
+        fontFamily: 'Manrope',
         fontSize: size,
         height: 1.05,
-        fontWeight: FontWeight.w600,
-        color: _ink,
+        fontWeight: FontWeight.w800,
+        color: color,
       );
 
-  ButtonStyle _block() => FilledButton.styleFrom(
-        backgroundColor: _ink,
-        foregroundColor: _amber,
-        shape: const RoundedRectangleBorder(),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+  ButtonStyle _coralButton() => FilledButton.styleFrom(
+        backgroundColor: _coral,
+        foregroundColor: _sand,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(vertical: 15),
         textStyle: const TextStyle(
-          fontFamily: 'IBM Plex Mono',
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
+          fontFamily: 'Manrope',
+          fontWeight: FontWeight.w800,
+          fontSize: 16,
         ),
       );
 
-  String _stamp(DateTime time) {
+  String _stampTime(DateTime time) {
     const months = [
       'Jan',
       'Feb',

@@ -1,28 +1,28 @@
 APP NAME
-Amberwick
+Saltpaper
 
 SUBTITLE
-Offline teacher, on device
+A paper teacher, offline
 
 KEYWORDS
-ledger,breath,walk,journal,offline,focus,practice,private,minutes,teacher,columns
+ticket,breath,walk,journal,offline,focus,practice,private,teacher,columns,paper
 
 PROMOTION
-A device-only teacher: four walk steps, a rising-column breath, and a private journal.
+A paper teacher on your phone: four walk steps, a rising-column breath, and a private journal.
 
 DESCRIPTION
-Amberwick is a complete offline teacher for a short practice you file on the phone itself.
+Saltpaper is a complete offline teacher for a short practice you keep on the phone.
 
-Begin with Walk: four prompts named Still, Frame, Travel, and Note. Open Four Columns and watch one column rise through inhale, hold, exhale, and rest. Set the minutes in Range, then file what you noticed as a Tablet note.
+Begin with Walk: four prompts named Pause, Turn, Drift, and Land. Open Four Columns and let one window rise through inhale, hold, exhale, and rest. Set the ticket length in Range, then stamp what you noticed as a Tablet note.
 
 WHAT YOU GET
 
 • Onboarding that introduces the whole lesson
 • Walk, four guidance steps you advance one at a time
 • Four Columns, a timed rising-column breath
-• Range, a session window of 5, 10, 15, or 25 minutes
+• Range, a session window of 6, 12, 18, or 30 minutes
 • Tablet, a private journal saved on the device
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Amberwick makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Saltpaper makes no network calls. Your range and Tablet notes stay in local storage on your phone.

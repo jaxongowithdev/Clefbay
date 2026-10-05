@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Amberwick - Private offline practice teacher"
+description: "Saltpaper - Private offline practice teacher"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
