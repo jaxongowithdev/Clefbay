@@ -1,4 +1,4 @@
-/// Saltpaper — private offline practice teacher.
+/// Plumline — private offline practice teacher.
 library;
 
 export 'src/screens/user_screen.dart';

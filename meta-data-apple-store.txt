@@ -1,28 +1,28 @@
 APP NAME
-Saltpaper
+Plumline
 
 SUBTITLE
-A paper teacher, offline
+A thread of practice, offline
 
 KEYWORDS
-ticket,breath,walk,journal,offline,focus,practice,private,teacher,columns,paper
+thread,breath,walk,journal,offline,focus,practice,private,teacher,columns,minutes
 
 PROMOTION
-A paper teacher on your phone: four walk steps, a rising-column breath, and a private journal.
+An on-device teacher: four walk steps, a rising-column breath, and a private journal.
 
 DESCRIPTION
-Saltpaper is a complete offline teacher for a short practice you keep on the phone.
+Plumline is a complete offline teacher for a short practice you keep on the phone.
 
-Begin with Walk: four prompts named Pause, Turn, Drift, and Land. Open Four Columns and let one window rise through inhale, hold, exhale, and rest. Set the ticket length in Range, then stamp what you noticed as a Tablet note.
+Begin with Walk: four prompts named Anchor, Sweep, Pace, and Pin. Open Four Columns and let one bead rise through inhale, hold, exhale, and rest. Set the thread length in Range, then pin what you noticed as a Tablet note.
 
 WHAT YOU GET
 
 • Onboarding that introduces the whole lesson
 • Walk, four guidance steps you advance one at a time
 • Four Columns, a timed rising-column breath
-• Range, a session window of 6, 12, 18, or 30 minutes
+• Range, a session window of 4, 9, 14, or 24 minutes
 • Tablet, a private journal saved on the device
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Saltpaper makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Plumline makes no network calls. Your range and Tablet notes stay in local storage on your phone.

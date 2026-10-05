@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Saltpaper - Private offline practice teacher"
+description: "Plumline - Private offline practice teacher"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
