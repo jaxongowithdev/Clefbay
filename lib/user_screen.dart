@@ -1,4 +1,4 @@
-/// Kilnslip — private offline practice teacher.
+/// Cropmark — offline teacher for laying out a printed sheet.
 library;
 
 export 'src/screens/user_screen.dart';

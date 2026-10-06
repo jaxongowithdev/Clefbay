@@ -1,28 +1,28 @@
 APP NAME
-Kilnslip
+Cropmark
 
 SUBTITLE
-A fired practice, offline
+Sheet layout, fully offline
 
 KEYWORDS
-kiln,breath,walk,journal,offline,focus,practice,private,teacher,columns,firing
+layout,print,columns,folio,offline,journal,pages,draft,teacher,sheet,notes
 
 PROMOTION
-An on-device teacher: four walk steps, a rising-column breath, and a private journal.
+An on-device teacher for marking a sheet, setting four columns, and keeping a private press log.
 
 DESCRIPTION
-Kilnslip is a complete offline teacher for a short practice you keep on the phone.
+Cropmark is a complete offline teacher for laying out one printed sheet.
 
-Begin with Walk: four prompts named Set, Aim, Cross, and Hold. Open Four Columns and let one form fill from the base through inhale, hold, exhale, and rest. Set the firing length in Range, then press what you noticed into a Tablet note.
+Begin with Walk: four prompts named Head, Gutter, Foot, and Fore. Open Four Columns and raise four columns of type through set, lead, lock, and pull. Choose the press-run length in Range, then write what the sheet needed in a Tablet note.
 
 WHAT YOU GET
 
 • Onboarding that introduces the whole lesson
-• Walk, four guidance steps you advance one at a time
-• Four Columns, a timed rising-column breath
-• Range, a session window of 8, 16, 22, or 40 minutes
+• Walk, four margin steps you advance one at a time
+• Four Columns, a timed drill for setting four columns of type
+• Range, a press run of 5, 15, 25, or 45 minutes
 • Tablet, a private journal saved on the device
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Kilnslip makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Cropmark makes no network calls. Your range and Tablet notes stay in local storage on your phone.

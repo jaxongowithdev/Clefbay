@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Kilnslip - Private offline practice teacher"
+description: "Cropmark - Offline sheet-layout teacher"
 publish_to: 'none'
 version: 1.0.0+1
 environment:

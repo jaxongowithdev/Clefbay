@@ -1,5 +1,5 @@
 name: user_screen
-description: "Kilnslip - A private, fully offline practice teacher kept on the device."
+description: "Cropmark - An offline teacher for laying out a printed sheet."
 version: 1.0.0+2
 
 environment:
@@ -28,11 +28,13 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: Newsreader
+    - family: Barlow
       fonts:
-        - asset: assets/fonts/Newsreader-Medium.ttf
+        - asset: assets/fonts/Barlow-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Barlow-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Newsreader-SemiBold.ttf
+        - asset: assets/fonts/Barlow-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Newsreader-Bold.ttf
+        - asset: assets/fonts/Barlow-Bold.ttf
           weight: 700
