@@ -1,4 +1,4 @@
-/// Bandkit — offline teacher for parlor instrument games.
+/// Notehall — offline instrument tile game. UserScreen is the app entry.
 library;
 
 export 'src/screens/user_screen.dart';

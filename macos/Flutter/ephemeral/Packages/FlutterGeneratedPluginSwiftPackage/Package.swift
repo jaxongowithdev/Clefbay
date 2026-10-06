@@ -15,6 +15,7 @@ let package = Package(
         .library(name: "FlutterGeneratedPluginSwiftPackage", type: .static, targets: ["FlutterGeneratedPluginSwiftPackage"])
     ],
     dependencies: [
+        .package(name: "audioplayers_darwin", path: "../.packages/audioplayers_darwin-6.5.0"),
         .package(name: "file_picker", path: "../.packages/file_picker-8.3.7"),
         .package(name: "file_selector_macos", path: "../.packages/file_selector_macos-0.9.5+1"),
         .package(name: "share_plus", path: "../.packages/share_plus-10.1.4"),
@@ -26,6 +27,7 @@ let package = Package(
         .target(
             name: "FlutterGeneratedPluginSwiftPackage",
             dependencies: [
+                .product(name: "audioplayers-darwin", package: "audioplayers_darwin"),
                 .product(name: "file-picker", package: "file_picker"),
                 .product(name: "file-selector-macos", package: "file_selector_macos"),
                 .product(name: "share-plus", package: "share_plus"),

@@ -1,28 +1,29 @@
 APP NAME
-Bandkit
+Notehall
 
 SUBTITLE
-Instrument games, fully offline
+Instrument tile match, fully offline
 
 KEYWORDS
-games,music,instrument,drum,bell,strings,offline,journal,play,teacher,band
+game,music,instrument,match,tiles,orchestra,offline,score,puzzle,hall,notes
 
 PROMOTION
-An on-device teacher for four instrument games, four wooden bars, and a private band book.
+An on-device instrument tile game. Match the hall, collect the order, and keep a private score book.
 
 DESCRIPTION
-Bandkit is a complete offline teacher for parlor instrument games.
+Notehall is a complete offline instrument tile game set in an orchestra hall.
 
-Begin with Walk: four games named Pluck, Tap, Reed, and Shake. Open Four Columns and lift four wooden bars through cue, strike, ring, and cut. Choose the round length in Range, then write which game you played in a Tablet note.
+The home board shows instrument tiles. Collect them in the order marked under the grid. Begin with Walk: four moves named Pick, Pair, Order, and Score. Open Four Columns and stack tiles through pick, pair, order, and score. Choose the hall clock in Range, then write which instrument you matched in a Tablet note.
 
 WHAT YOU GET
 
-• Onboarding that introduces the whole set of games
-• Walk, four instrument games you advance one at a time
-• Four Columns, a timed drill that lifts four wooden bars
-• Range, a round of 3, 7, 11, or 21 minutes
+• Onboarding that opens the hall
+• A playable instrument tile board with a collect order
+• Walk, four moves you advance one at a time
+• Four Columns, a timed stack of tiles
+• Range, a hall clock of 8, 12, 20, or 40 minutes
 • Tablet, a private journal saved on the device
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Bandkit makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Notehall makes no network calls. Your range and Tablet notes stay in local storage on your phone.
