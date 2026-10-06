@@ -1,4 +1,4 @@
-/// Notehall — offline instrument tile game. UserScreen is the app entry.
+/// Fernquest — offline word hunt. UserScreen is the app entry.
 library;
 
 export 'src/screens/user_screen.dart';

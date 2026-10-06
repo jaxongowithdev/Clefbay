@@ -1,5 +1,5 @@
 name: user_screen
-description: "Notehall - An offline instrument tile game."
+description: "Fernquest - An offline word hunt on a letter grid."
 version: 1.0.0+2
 
 environment:

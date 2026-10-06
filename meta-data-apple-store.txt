@@ -1,29 +1,30 @@
 APP NAME
-Notehall
+Fernquest
 
 SUBTITLE
-Instrument tile match, fully offline
+Word hunt, fully offline
 
 KEYWORDS
-game,music,instrument,match,tiles,orchestra,offline,score,puzzle,hall,notes
+game,word,hunt,letters,grid,quest,offline,puzzle,find,glade,notes
 
 PROMOTION
-An on-device instrument tile game. Match the hall, collect the order, and keep a private score book.
+An on-device word hunt. Trace letters across the wooden grid and keep a private field book.
 
 DESCRIPTION
-Notehall is a complete offline instrument tile game set in an orchestra hall.
+Fernquest is a complete offline word hunt in a green glade.
 
-The home board shows instrument tiles. Collect them in the order marked under the grid. Begin with Walk: four moves named Pick, Pair, Order, and Score. Open Four Columns and stack tiles through pick, pair, order, and score. Choose the hall clock in Range, then write which instrument you matched in a Tablet note.
+The home board is a wooden letter grid. Tap letters from left to right to find PATH, FIND, LORE, and QUEST. A finished word turns green and scores. Begin with Walk: four moves named Scan, Trace, Mark, and Hunt. Open Four Columns and fill four letter rows. Choose the trail clock in Range, then write which word you found in a Tablet note.
 
 WHAT YOU GET
 
-• Onboarding that opens the hall
-• A playable instrument tile board with a collect order
+• Onboarding that opens the glade
+• A playable word grid with a target list
 • Walk, four moves you advance one at a time
-• Four Columns, a timed stack of tiles
-• Range, a hall clock of 8, 12, 20, or 40 minutes
+• Four Columns, a timed letter-row drill
+• Range, a trail clock of 5, 9, 14, or 22 minutes
 • Tablet, a private journal saved on the device
+• A tap sound when a word is found
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Notehall makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Fernquest makes no network calls. Your range and Tablet notes stay in local storage on your phone.

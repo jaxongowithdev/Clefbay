@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Notehall - Offline instrument tile game"
+description: "Fernquest - Offline word-hunt game"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
