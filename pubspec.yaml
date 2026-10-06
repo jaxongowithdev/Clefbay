@@ -1,5 +1,5 @@
 name: user_screen
-description: "Plumline - A private, fully offline practice teacher kept on the device."
+description: "Kilnslip - A private, fully offline practice teacher kept on the device."
 version: 1.0.0+2
 
 environment:
@@ -28,13 +28,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: Figtree
+    - family: Newsreader
       fonts:
-        - asset: assets/fonts/Figtree-Medium.ttf
+        - asset: assets/fonts/Newsreader-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Figtree-SemiBold.ttf
+        - asset: assets/fonts/Newsreader-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Figtree-Bold.ttf
+        - asset: assets/fonts/Newsreader-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Figtree-ExtraBold.ttf
-          weight: 800

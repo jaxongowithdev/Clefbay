@@ -1,28 +1,28 @@
 APP NAME
-Plumline
+Kilnslip
 
 SUBTITLE
-A thread of practice, offline
+A fired practice, offline
 
 KEYWORDS
-thread,breath,walk,journal,offline,focus,practice,private,teacher,columns,minutes
+kiln,breath,walk,journal,offline,focus,practice,private,teacher,columns,firing
 
 PROMOTION
 An on-device teacher: four walk steps, a rising-column breath, and a private journal.
 
 DESCRIPTION
-Plumline is a complete offline teacher for a short practice you keep on the phone.
+Kilnslip is a complete offline teacher for a short practice you keep on the phone.
 
-Begin with Walk: four prompts named Anchor, Sweep, Pace, and Pin. Open Four Columns and let one bead rise through inhale, hold, exhale, and rest. Set the thread length in Range, then pin what you noticed as a Tablet note.
+Begin with Walk: four prompts named Set, Aim, Cross, and Hold. Open Four Columns and let one form fill from the base through inhale, hold, exhale, and rest. Set the firing length in Range, then press what you noticed into a Tablet note.
 
 WHAT YOU GET
 
 • Onboarding that introduces the whole lesson
 • Walk, four guidance steps you advance one at a time
 • Four Columns, a timed rising-column breath
-• Range, a session window of 4, 9, 14, or 24 minutes
+• Range, a session window of 8, 16, 22, or 40 minutes
 • Tablet, a private journal saved on the device
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Plumline makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Kilnslip makes no network calls. Your range and Tablet notes stay in local storage on your phone.

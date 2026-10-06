@@ -1,4 +1,4 @@
-/// Plumline — private offline practice teacher.
+/// Kilnslip — private offline practice teacher.
 library;
 
 export 'src/screens/user_screen.dart';
