@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Device-only layout teacher. No accounts, network clients, cloud sync,
-/// or remote model calls.
+/// Device-only teacher for parlor instrument games. No accounts, network
+/// clients, cloud sync, or remote model calls.
 class UserScreen extends StatefulWidget {
   const UserScreen({super.key});
 
@@ -33,14 +33,18 @@ class _Note {
 }
 
 class _UserScreenState extends State<UserScreen> {
-  static const _sheet = Color(0xFFF3F6FA);
-  static const _ink = Color(0xFF102033);
-  static const _line = Color(0xFF1E4E7A);
-  static const _rule = Color(0xFFD3DDE8);
-  static const _reg = Color(0xFFD7263D);
-  static const _paper = Color(0xFFFFFFFF);
+  static const _cream = Color(0xFFFFF4E0);
+  static const _ink = Color(0xFF24160C);
+  static const _walnut = Color(0xFF3A2415);
+  static const _gold = Color(0xFFE8A317);
+  static const _coral = Color(0xFFE24B3B);
+  static const _teal = Color(0xFF1C8C78);
+  static const _navy = Color(0xFF243E73);
+  static const _ivory = Color(0xFFFFFDF8);
+  static const _mute = Color(0xFF8A7360);
 
-  static const _ranges = [5, 15, 25, 45];
+  static const _ranges = [3, 7, 11, 21];
+  static const _barColors = [_coral, _gold, _teal, _navy];
 
   final _noteController = TextEditingController();
   final _onboarding = PageController();
@@ -51,7 +55,7 @@ class _UserScreenState extends State<UserScreen> {
   _Tab _tab = _Tab.home;
   int _onboardingPage = 0;
   int _walkStep = 0;
-  int _rangeMinutes = 15;
+  int _rangeMinutes = 7;
   int _columnPhase = 0;
   int _columnSeconds = 4;
   bool _setting = false;
@@ -60,20 +64,20 @@ class _UserScreenState extends State<UserScreen> {
 
   final _walkSteps = const [
     (
-      'Head',
-      'Mark the top edge of the sheet, one finger in from the trim.',
+      'Pluck',
+      'Pinch one string and count four rings before it fades.',
     ),
     (
-      'Gutter',
-      'Draw the inner fold where the page will bend.',
+      'Tap',
+      'Strike the drum head once, then lift your hand away.',
     ),
     (
-      'Foot',
-      'Mark the bottom edge so the text block sits above it.',
+      'Reed',
+      'Cover one hole and play a short note on the pipe.',
     ),
     (
-      'Fore',
-      'Mark the outer edge and lock the page box.',
+      'Shake',
+      'Shake the bell twice and set it down on the table.',
     ),
   ];
 
@@ -85,7 +89,7 @@ class _UserScreenState extends State<UserScreen> {
 
   Future<void> _loadLocalState() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('cropmark_notes') ?? '[]';
+    final raw = prefs.getString('bandkit_notes') ?? '[]';
     try {
       final decoded = jsonDecode(raw) as List<dynamic>;
       _notes = decoded
@@ -98,20 +102,20 @@ class _UserScreenState extends State<UserScreen> {
     if (!mounted) return;
     setState(() {
       _prefs = prefs;
-      _onboarded = prefs.getBool('cropmark_onboarded') ?? false;
-      _rangeMinutes = prefs.getInt('cropmark_range') ?? 15;
+      _onboarded = prefs.getBool('bandkit_onboarded') ?? false;
+      _rangeMinutes = prefs.getInt('bandkit_range') ?? 7;
       _ready = true;
     });
   }
 
   Future<void> _finishOnboarding() async {
-    await _prefs?.setBool('cropmark_onboarded', true);
+    await _prefs?.setBool('bandkit_onboarded', true);
     if (mounted) setState(() => _onboarded = true);
   }
 
   Future<void> _saveRange(int minutes) async {
     setState(() => _rangeMinutes = minutes);
-    await _prefs?.setInt('cropmark_range', minutes);
+    await _prefs?.setInt('bandkit_range', minutes);
   }
 
   Future<void> _saveNote() async {
@@ -126,10 +130,10 @@ class _UserScreenState extends State<UserScreen> {
       _noteController.clear();
     });
     await _prefs?.setString(
-      'cropmark_notes',
+      'bandkit_notes',
       jsonEncode(_notes.map((note) => note.toJson()).toList()),
     );
-    _toast('Kept on this sheet. Private journal.');
+    _toast('Kept in the band book. Private journal.');
   }
 
   void _toast(String message) {
@@ -176,26 +180,26 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cropmark',
+      title: 'Bandkit',
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: _messengerKey,
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: _sheet,
-        fontFamily: 'Barlow',
+        scaffoldBackgroundColor: _cream,
+        fontFamily: 'Fredoka',
         splashFactory: NoSplash.splashFactory,
         colorScheme: const ColorScheme.light(
-          surface: _sheet,
-          primary: _line,
+          surface: _cream,
+          primary: _walnut,
           onPrimary: Colors.white,
           onSurface: _ink,
         ),
         snackBarTheme: const SnackBarThemeData(
-          backgroundColor: _ink,
+          backgroundColor: _walnut,
           behavior: SnackBarBehavior.floating,
           contentTextStyle: TextStyle(
             color: Colors.white,
-            fontFamily: 'Barlow',
+            fontFamily: 'Fredoka',
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
@@ -203,8 +207,8 @@ class _UserScreenState extends State<UserScreen> {
       ),
       home: !_ready
           ? const Scaffold(
-              backgroundColor: _sheet,
-              body: Center(child: CircularProgressIndicator(color: _line)),
+              backgroundColor: _cream,
+              body: Center(child: CircularProgressIndicator(color: _coral)),
             )
           : _onboarded
               ? _shell()
@@ -216,49 +220,50 @@ class _UserScreenState extends State<UserScreen> {
     const pages = [
       (
         '01',
-        'A press lesson\non this phone.',
-        'Cropmark teaches a sheet layout and stores it only on the device.',
+        'A band of games\non this phone.',
+        'Bandkit teaches four instrument games and stores the score only on the device.',
       ),
       (
         '02',
-        'Walk the margins.\nSet four columns.',
-        'Walk marks the page box. Four Columns raises four columns of type.',
+        'Walk the games.\nRaise four bars.',
+        'Walk plays four instruments. Four Columns lifts four wooden bars.',
       ),
       (
         '03',
-        'Keep the note\non the sheet.',
-        'Tablet is a private printer’s log. No account. No cloud. No remote AI.',
+        'Keep the score\nin the book.',
+        'Tablet is a private band book. No account. No cloud. No remote AI.',
       ),
     ];
     final page = pages[_onboardingPage];
     final last = _onboardingPage == pages.length - 1;
     return Scaffold(
-      backgroundColor: _sheet,
+      backgroundColor: _cream,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 14, 22, 16),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  _regDot(),
-                  const SizedBox(width: 8),
                   const Text(
-                    'CROPMARK',
+                    'BANDKIT',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 1.6,
-                      color: _ink,
+                      letterSpacing: 1.4,
+                      color: _walnut,
                     ),
                   ),
                   const Spacer(),
-                  Text(page.$1, style: const TextStyle(color: _line, fontWeight: FontWeight.w700)),
+                  Text(
+                    page.$1,
+                    style: const TextStyle(color: _coral, fontWeight: FontWeight.w700),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: _frame(
+                child: _card(
                   child: PageView.builder(
                     controller: _onboarding,
                     itemCount: pages.length,
@@ -266,15 +271,17 @@ class _UserScreenState extends State<UserScreen> {
                     itemBuilder: (_, index) {
                       final item = pages[index];
                       return Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 28, 18, 18),
+                        padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(item.$2, style: _display(32)),
+                            _bars(height: 28),
+                            const SizedBox(height: 16),
+                            Text(item.$2, style: _display(30)),
                             const SizedBox(height: 12),
                             Text(
                               item.$3,
-                              style: const TextStyle(fontSize: 16, height: 1.4, color: _line),
+                              style: const TextStyle(fontSize: 16, height: 1.4, color: _mute),
                             ),
                           ],
                         ),
@@ -283,7 +290,7 @@ class _UserScreenState extends State<UserScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               _block(
                 key: const Key('onboarding-advance'),
                 label: last ? 'Begin' : 'Next',
@@ -294,9 +301,14 @@ class _UserScreenState extends State<UserScreen> {
                           curve: Curves.easeOut,
                         ),
               ),
-              TextButton(
-                onPressed: _finishOnboarding,
-                child: const Text('Skip', style: TextStyle(color: _line, fontWeight: FontWeight.w600)),
+              Center(
+                child: TextButton(
+                  onPressed: _finishOnboarding,
+                  child: const Text(
+                    'Skip',
+                    style: TextStyle(color: _walnut, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
             ],
           ),
@@ -308,32 +320,31 @@ class _UserScreenState extends State<UserScreen> {
   Widget _shell() {
     final pages = [_home(), _walk(), _four(), _range(), _tablet()];
     return Scaffold(
-      backgroundColor: _sheet,
+      backgroundColor: _cream,
       body: SafeArea(
         child: Column(
           children: [
-            _titleBar(),
             Expanded(child: IndexedStack(index: _tab.index, children: pages)),
+            _keybed(),
           ],
         ),
       ),
     );
   }
 
-  Widget _titleBar() {
+  Widget _keybed() {
     const items = [
-      (_Tab.home, 'Home', 'tab-home'),
-      (_Tab.walk, 'Walk', 'tab-walk'),
-      (_Tab.four, 'Four', 'tab-four'),
-      (_Tab.range, 'Range', 'tab-range'),
-      (_Tab.tablet, 'Tablet', 'tab-tablet'),
+      (_Tab.home, 'Home', 'tab-home', _walnut),
+      (_Tab.walk, 'Walk', 'tab-walk', _coral),
+      (_Tab.four, 'Four', 'tab-four', _gold),
+      (_Tab.range, 'Range', 'tab-range', _teal),
+      (_Tab.tablet, 'Tablet', 'tab-tablet', _navy),
     ];
     return Container(
-      decoration: const BoxDecoration(
-        color: _paper,
-        border: Border(bottom: BorderSide(color: _line, width: 1.5)),
-      ),
+      color: _walnut,
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           for (final item in items)
             Expanded(
@@ -341,23 +352,23 @@ class _UserScreenState extends State<UserScreen> {
                 key: Key(item.$3),
                 behavior: HitTestBehavior.opaque,
                 onTap: () => setState(() => _tab = item.$1),
-                child: SizedBox(
-                  height: 48,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (_tab == item.$1) _regDot(size: 6) else const SizedBox(height: 6),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.$2,
-                        style: TextStyle(
-                          fontFamily: 'Barlow',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: _tab == item.$1 ? _ink : _line,
-                        ),
-                      ),
-                    ],
+                child: Container(
+                  height: _tab == item.$1 ? 62 : 50,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: _tab == item.$1 ? item.$4 : _ivory,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                    border: Border.all(color: _ink, width: 1.2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _tab == item.$1 ? _ivory : _ink,
+                    ),
                   ),
                 ),
               ),
@@ -370,23 +381,31 @@ class _UserScreenState extends State<UserScreen> {
   Widget _home() {
     return _scroll(
       children: [
-        Text('SHEET 01', style: _kicker()),
-        const SizedBox(height: 6),
-        Text('Open the sheet.', style: _display(34)),
+        Text('ROUND', style: _kicker()),
+        const SizedBox(height: 4),
+        Text('Open the band.', style: _display(34)),
         const SizedBox(height: 4),
         Text(
-          'Sheet of $_rangeMinutes minutes',
-          style: const TextStyle(fontSize: 16, color: _line, fontWeight: FontWeight.w600),
+          'Round of $_rangeMinutes minutes',
+          style: const TextStyle(fontSize: 16, color: _coral, fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 16),
-        _link('Walk', 'Four margin marks around the page.', () => setState(() => _tab = _Tab.walk)),
-        _link('Four Columns', 'Raise four columns of type.', () => setState(() => _tab = _Tab.four)),
-        _link('Range', 'How long this press run lasts.', () => setState(() => _tab = _Tab.range)),
-        _link('Tablet', 'A private note on this sheet.', () => setState(() => _tab = _Tab.tablet)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 14),
+        _link('Walk', 'Four instrument games, one after another.', _coral, () {
+          setState(() => _tab = _Tab.walk);
+        }),
+        _link('Four Columns', 'Lift four wooden bars in turn.', _gold, () {
+          setState(() => _tab = _Tab.four);
+        }),
+        _link('Range', 'How long this round of games lasts.', _teal, () {
+          setState(() => _tab = _Tab.range);
+        }),
+        _link('Tablet', 'A private note in the band book.', _navy, () {
+          setState(() => _tab = _Tab.tablet);
+        }),
+        const SizedBox(height: 6),
         const Text(
           'No account. No cloud. No remote AI.',
-          style: TextStyle(fontWeight: FontWeight.w700, color: _ink),
+          style: TextStyle(fontWeight: FontWeight.w600, color: _ink),
         ),
       ],
     );
@@ -394,13 +413,15 @@ class _UserScreenState extends State<UserScreen> {
 
   Widget _walk() {
     final step = _walkSteps[_walkStep];
+    final color = _barColors[_walkStep];
     return _scroll(
       children: [
-        Text('WALK  0${_walkStep + 1} / 04', style: _kicker()),
+        Text('GAME  0${_walkStep + 1} / 04', style: _kicker()),
         const SizedBox(height: 8),
-        _frame(
+        _card(
+          stripe: color,
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -408,20 +429,23 @@ class _UserScreenState extends State<UserScreen> {
                 const SizedBox(height: 8),
                 Text(
                   step.$2,
-                  style: const TextStyle(fontSize: 17, height: 1.4, color: _line),
+                  style: const TextStyle(fontSize: 17, height: 1.4, color: _ink),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         Row(
           children: List.generate(4, (index) {
-            return Expanded(
-              child: Container(
-                height: 4,
-                margin: EdgeInsets.only(right: index == 3 ? 0 : 6),
-                color: index <= _walkStep ? _reg : _rule,
+            final on = index == _walkStep;
+            return Container(
+              width: on ? 28 : 12,
+              height: 12,
+              margin: EdgeInsets.only(right: index == 3 ? 0 : 8),
+              decoration: BoxDecoration(
+                color: index <= _walkStep ? _barColors[index] : const Color(0xFFE7D7C0),
+                borderRadius: BorderRadius.circular(8),
               ),
             );
           }),
@@ -429,7 +453,7 @@ class _UserScreenState extends State<UserScreen> {
         const SizedBox(height: 16),
         _block(
           key: const Key('walk-advance'),
-          label: _walkStep == _walkSteps.length - 1 ? 'Walk again' : 'Next step',
+          label: _walkStep == _walkSteps.length - 1 ? 'Play again' : 'Next game',
           onTap: () => setState(() => _walkStep = (_walkStep + 1) % _walkSteps.length),
         ),
       ],
@@ -437,16 +461,16 @@ class _UserScreenState extends State<UserScreen> {
   }
 
   Widget _four() {
-    const labels = ['Set', 'Lead', 'Lock', 'Pull'];
+    const labels = ['Cue', 'Strike', 'Ring', 'Cut'];
     return _scroll(
       children: [
         Text('FOUR COLUMNS', style: _kicker()),
         const SizedBox(height: 6),
-        Text('Raise the type.', style: _display(32)),
+        Text('Lift the bars.', style: _display(32)),
         const SizedBox(height: 6),
         const Text(
-          'Four columns on the page. The active column rises for four counts.',
-          style: TextStyle(fontSize: 15, height: 1.4, color: _line),
+          'Four wooden bars. The live bar rises for four counts.',
+          style: TextStyle(fontSize: 15, height: 1.4, color: _mute),
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -465,8 +489,8 @@ class _UserScreenState extends State<UserScreen> {
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             final height = active
-                                ? constraints.maxHeight * (0.16 + rise * 0.84)
-                                : constraints.maxHeight * 0.1;
+                                ? constraints.maxHeight * (0.18 + rise * 0.82)
+                                : constraints.maxHeight * 0.16;
                             return Align(
                               alignment: Alignment.bottomCenter,
                               child: AnimatedContainer(
@@ -475,8 +499,12 @@ class _UserScreenState extends State<UserScreen> {
                                 height: height,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: active ? _line : _rule,
-                                  border: Border.all(color: _ink, width: 1.2),
+                                  color: _barColors[index],
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: active ? _ink : _barColors[index],
+                                    width: active ? 2 : 0,
+                                  ),
                                 ),
                               ),
                             );
@@ -487,9 +515,9 @@ class _UserScreenState extends State<UserScreen> {
                       Text(
                         labels[index],
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: active ? _reg : _line,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: active ? _ink : _mute,
                         ),
                       ),
                     ],
@@ -519,11 +547,11 @@ class _UserScreenState extends State<UserScreen> {
       children: [
         Text('RANGE', style: _kicker()),
         const SizedBox(height: 6),
-        Text('Press run.', style: _display(32)),
+        Text('Round length.', style: _display(32)),
         const SizedBox(height: 6),
         const Text(
           'Stored only on this device.',
-          style: TextStyle(color: _line, fontWeight: FontWeight.w600),
+          style: TextStyle(color: _mute, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 16),
         Row(
@@ -540,16 +568,17 @@ class _UserScreenState extends State<UserScreen> {
                       height: 64,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: _rangeMinutes == minute ? _ink : _paper,
-                        border: Border.all(color: _ink, width: 1.4),
+                        color: _rangeMinutes == minute ? _teal : _ivory,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: _ink, width: 1.3),
                       ),
                       child: Text(
                         '$minute',
                         style: TextStyle(
-                          fontFamily: 'Barlow',
+                          fontFamily: 'Fredoka',
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: _rangeMinutes == minute ? Colors.white : _ink,
+                          color: _rangeMinutes == minute ? _ivory : _ink,
                         ),
                       ),
                     ),
@@ -560,8 +589,8 @@ class _UserScreenState extends State<UserScreen> {
         ),
         const SizedBox(height: 14),
         const Text(
-          'A range is how long you keep the sheet on the board.',
-          style: TextStyle(fontSize: 16, height: 1.4, color: _line),
+          'A range is how long you keep the instrument games going.',
+          style: TextStyle(fontSize: 16, height: 1.4, color: _ink),
         ),
       ],
     );
@@ -580,26 +609,17 @@ class _UserScreenState extends State<UserScreen> {
           minLines: 4,
           maxLines: 6,
           style: const TextStyle(color: _ink, fontSize: 16, height: 1.4),
-          cursorColor: _reg,
+          cursorColor: _coral,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            hintText: 'What did this sheet need?',
-            hintStyle: TextStyle(color: Color(0xFF6D7C8C)),
+          decoration: InputDecoration(
+            hintText: 'Which game did you play?',
+            hintStyle: const TextStyle(color: _mute),
             filled: true,
-            fillColor: _paper,
-            contentPadding: EdgeInsets.all(14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: _line, width: 1.4),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: _line, width: 1.4),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: _reg, width: 1.8),
-            ),
+            fillColor: _ivory,
+            contentPadding: const EdgeInsets.all(14),
+            border: _fieldBorder(_walnut),
+            enabledBorder: _fieldBorder(_walnut),
+            focusedBorder: _fieldBorder(_coral),
           ),
         ),
         const SizedBox(height: 12),
@@ -611,8 +631,8 @@ class _UserScreenState extends State<UserScreen> {
         const SizedBox(height: 18),
         if (_notes.isEmpty)
           const Text(
-            'The log is empty. The first note stays on this phone.',
-            style: TextStyle(color: _line, fontSize: 15),
+            'The band book is empty. The first note stays on this phone.',
+            style: TextStyle(color: _mute, fontSize: 15),
           )
         else
           for (final note in _notes.take(6))
@@ -621,15 +641,16 @@ class _UserScreenState extends State<UserScreen> {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _paper,
-                border: Border.all(color: _rule),
+                color: _ivory,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE7D7C0)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     _stamp(note.time),
-                    style: const TextStyle(color: _reg, fontSize: 12, fontWeight: FontWeight.w700),
+                    style: const TextStyle(color: _coral, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(note.body, style: const TextStyle(fontSize: 15, height: 1.35, color: _ink)),
@@ -642,44 +663,70 @@ class _UserScreenState extends State<UserScreen> {
 
   Widget _scroll({required List<Widget> children}) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
       children: children,
     );
   }
 
-  Widget _frame({required Widget child}) {
+  Widget _card({required Widget child, Color? stripe}) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: _paper,
-        border: Border.all(color: _line, width: 1.4),
+        color: _ivory,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _ink, width: 1.3),
       ),
-      child: child,
+      clipBehavior: Clip.antiAlias,
+      child: stripe == null
+          ? child
+          : IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(width: 10, color: stripe),
+                  Expanded(child: child),
+                ],
+              ),
+            ),
     );
   }
 
-  Widget _link(String title, String body, VoidCallback onTap) {
+  Widget _bars({required double height}) {
+    return SizedBox(
+      height: height,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < 4; i++)
+            Container(
+              width: 18,
+              height: height * (0.45 + i * 0.15),
+              margin: const EdgeInsets.only(right: 6),
+              decoration: BoxDecoration(
+                color: _barColors[i],
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _link(String title, String body, Color stripe, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: _frame(
+        child: _card(
+          stripe: stripe,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _regDot(size: 8),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                      Text(body, style: const TextStyle(color: _line, fontSize: 13)),
-                    ],
-                  ),
-                ),
+                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                Text(body, style: const TextStyle(color: _mute, fontSize: 13)),
               ],
             ),
           ),
@@ -699,15 +746,18 @@ class _UserScreenState extends State<UserScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 48,
+        height: 50,
         alignment: Alignment.center,
-        color: _ink,
+        decoration: BoxDecoration(
+          color: _coral,
+          borderRadius: BorderRadius.circular(14),
+        ),
         child: Text(
           label,
           style: const TextStyle(
-            color: Colors.white,
-            fontFamily: 'Barlow',
-            fontWeight: FontWeight.w700,
+            color: _ivory,
+            fontFamily: 'Fredoka',
+            fontWeight: FontWeight.w600,
             fontSize: 16,
           ),
         ),
@@ -715,25 +765,24 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 
-  Widget _regDot({double size = 8}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(color: _reg, shape: BoxShape.circle),
+  OutlineInputBorder _fieldBorder(Color color) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: color, width: 1.4),
     );
   }
 
   TextStyle _kicker() => const TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.5,
-        color: _reg,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.6,
+        color: _gold,
       );
 
   TextStyle _display(double size) => TextStyle(
-        fontFamily: 'Barlow',
+        fontFamily: 'Fredoka',
         fontSize: size,
-        height: 1.02,
+        height: 1.05,
         fontWeight: FontWeight.w700,
         color: _ink,
       );

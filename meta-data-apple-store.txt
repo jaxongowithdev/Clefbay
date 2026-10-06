@@ -1,28 +1,28 @@
 APP NAME
-Cropmark
+Bandkit
 
 SUBTITLE
-Sheet layout, fully offline
+Instrument games, fully offline
 
 KEYWORDS
-layout,print,columns,folio,offline,journal,pages,draft,teacher,sheet,notes
+games,music,instrument,drum,bell,strings,offline,journal,play,teacher,band
 
 PROMOTION
-An on-device teacher for marking a sheet, setting four columns, and keeping a private press log.
+An on-device teacher for four instrument games, four wooden bars, and a private band book.
 
 DESCRIPTION
-Cropmark is a complete offline teacher for laying out one printed sheet.
+Bandkit is a complete offline teacher for parlor instrument games.
 
-Begin with Walk: four prompts named Head, Gutter, Foot, and Fore. Open Four Columns and raise four columns of type through set, lead, lock, and pull. Choose the press-run length in Range, then write what the sheet needed in a Tablet note.
+Begin with Walk: four games named Pluck, Tap, Reed, and Shake. Open Four Columns and lift four wooden bars through cue, strike, ring, and cut. Choose the round length in Range, then write which game you played in a Tablet note.
 
 WHAT YOU GET
 
-• Onboarding that introduces the whole lesson
-• Walk, four margin steps you advance one at a time
-• Four Columns, a timed drill for setting four columns of type
-• Range, a press run of 5, 15, 25, or 45 minutes
+• Onboarding that introduces the whole set of games
+• Walk, four instrument games you advance one at a time
+• Four Columns, a timed drill that lifts four wooden bars
+• Range, a round of 3, 7, 11, or 21 minutes
 • Tablet, a private journal saved on the device
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Cropmark makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Bandkit makes no network calls. Your range and Tablet notes stay in local storage on your phone.

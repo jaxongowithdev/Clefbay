@@ -11,7 +11,7 @@ void main() {
     await tester.pumpWidget(const UserScreen());
     await tester.pumpAndSettle();
 
-    expect(find.text('A press lesson\non this phone.'), findsOneWidget);
+    expect(find.text('A band of games\non this phone.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('onboarding-advance')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('onboarding-advance')));
@@ -20,45 +20,45 @@ void main() {
     await tester.tap(find.byKey(const Key('onboarding-advance')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Open the sheet.'), findsOneWidget);
+    expect(find.text('Open the band.'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-walk')));
     await tester.pumpAndSettle();
-    expect(find.text('Mark the top edge of the sheet, one finger in from the trim.'), findsOneWidget);
+    expect(find.text('Pinch one string and count four rings before it fades.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Draw the inner fold where the page will bend.'), findsOneWidget);
+    expect(find.text('Strike the drum head once, then lift your hand away.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Mark the bottom edge so the text block sits above it.'), findsOneWidget);
+    expect(find.text('Cover one hole and play a short note on the pipe.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Mark the outer edge and lock the page box.'), findsOneWidget);
+    expect(find.text('Shake the bell twice and set it down on the table.'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-four')));
     await tester.pumpAndSettle();
     expect(find.text('Ready'), findsOneWidget);
     await tester.tap(find.byKey(const Key('columns-toggle')));
     await tester.pump();
-    expect(find.text('Set · 4'), findsOneWidget);
+    expect(find.text('Cue · 4'), findsOneWidget);
     await tester.tap(find.byKey(const Key('columns-toggle')));
     await tester.pump();
 
     await tester.tap(find.byKey(const Key('tab-range')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('range-25')));
+    await tester.ensureVisible(find.byKey(const Key('range-11')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('range-25')));
+    await tester.tap(find.byKey(const Key('range-11')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('tab-home')));
     await tester.pumpAndSettle();
-    expect(find.text('Sheet of 25 minutes'), findsOneWidget);
+    expect(find.text('Round of 11 minutes'), findsOneWidget);
     await tester.tap(find.byKey(const Key('tab-tablet')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('tablet-field')), 'Counted three objects.');
     await tester.tap(find.byKey(const Key('tablet-save')));
     await tester.pumpAndSettle();
     expect(find.text('Counted three objects.'), findsOneWidget);
-    expect(find.text('Kept on this sheet. Private journal.'), findsOneWidget);
+    expect(find.text('Kept in the band book. Private journal.'), findsOneWidget);
   });
 }

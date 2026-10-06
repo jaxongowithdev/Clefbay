@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Cropmark - Offline sheet-layout teacher"
+description: "Bandkit - Offline instrument-game teacher"
 publish_to: 'none'
 version: 1.0.0+1
 environment:

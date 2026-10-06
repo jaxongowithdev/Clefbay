@@ -1,5 +1,5 @@
 name: user_screen
-description: "Cropmark - An offline teacher for laying out a printed sheet."
+description: "Bandkit - An offline teacher for parlor instrument games."
 version: 1.0.0+2
 
 environment:
@@ -28,13 +28,13 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   fonts:
-    - family: Barlow
+    - family: Fredoka
       fonts:
-        - asset: assets/fonts/Barlow-Regular.ttf
+        - asset: assets/fonts/Fredoka-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Barlow-Medium.ttf
+        - asset: assets/fonts/Fredoka-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Barlow-SemiBold.ttf
+        - asset: assets/fonts/Fredoka-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Barlow-Bold.ttf
+        - asset: assets/fonts/Fredoka-Bold.ttf
           weight: 700

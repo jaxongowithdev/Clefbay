@@ -1,4 +1,4 @@
-/// Cropmark — offline teacher for laying out a printed sheet.
+/// Bandkit — offline teacher for parlor instrument games.
 library;
 
 export 'src/screens/user_screen.dart';
