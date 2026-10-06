@@ -1,30 +1,31 @@
 APP NAME
-Fernquest
+Clefbay
 
 SUBTITLE
-Word hunt, fully offline
+Instrument bay, fully offline
 
 KEYWORDS
-game,word,hunt,letters,grid,quest,offline,puzzle,find,glade,notes
+game,music,instrument,violin,trumpet,map,shop,offline,melody,assemble
 
 PROMOTION
-An on-device word hunt. Trace letters across the wooden grid and keep a private field book.
+An on-device instrument bay. Fit the horn, open the map, and keep a private field book.
 
 DESCRIPTION
-Fernquest is a complete offline word hunt in a green glade.
+Clefbay is a complete offline instrument game in a teal bay.
 
-The home board is a wooden letter grid. Tap letters from left to right to find PATH, FIND, LORE, and QUEST. A finished word turns green and scores. Begin with Walk: four moves named Scan, Trace, Mark, and Hunt. Open Four Columns and fill four letter rows. Choose the trail clock in Range, then write which word you found in a Tablet note.
+Home opens six halls. Fit the horn by tapping Bell, Valve, Slide, and Mouth. A finished build turns gold, scores, and plays a tap sound. The map has String Forest, Brass Canyon, and a locked Reed bay. The shelf keeps eight instruments. The card replays the bay tune. The shop spends stars that stay on the phone. The hall board is a local list. Begin with Walk: four moves named Open, Tap, Score, and Next. Open Four Columns and run Fit, Tune, Check, and Keep. Choose the bay clock in Range, then write which part you fit in a Tablet note.
 
 WHAT YOU GET
 
-• Onboarding that opens the glade
-• A playable word grid with a target list
+• Onboarding that opens the bay
+• A playable horn build with a remembered tune
+• A world map, shelf, shop, instrument card, and phone-only board
 • Walk, four moves you advance one at a time
-• Four Columns, a timed letter-row drill
-• Range, a trail clock of 5, 9, 14, or 22 minutes
+• Four Columns, a timed bay drill
+• Range, a bay clock of 5, 9, 14, or 22 minutes
 • Tablet, a private journal saved on the device
-• A tap sound when a word is found
+• A tap sound when a part locks in
 
 PRIVATE BY DESIGN
 
-There is no account, no sign-in, no cloud sync, and no remote AI. Fernquest makes no network calls. Your range and Tablet notes stay in local storage on your phone.
+There is no account, no sign-in, no cloud sync, and no remote AI. Clefbay makes no network calls. Your range, stars, and Tablet notes stay in local storage on your phone.

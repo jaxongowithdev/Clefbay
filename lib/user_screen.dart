@@ -1,4 +1,4 @@
-/// Fernquest — offline word hunt. UserScreen is the app entry.
+/// Clefbay — offline instrument bay. UserScreen is the app entry.
 library;
 
 export 'src/screens/user_screen.dart';

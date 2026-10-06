@@ -1,13 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io' show Platform;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Device-only word hunt. No accounts, network clients, cloud sync, or remote
-/// model calls. This widget is the app entry.
+/// Device-only instrument bay. No accounts, network clients, cloud sync, or
+/// remote model calls. This widget is the app entry.
 class UserScreen extends StatefulWidget {
   const UserScreen({super.key});
 
@@ -17,421 +16,349 @@ class UserScreen extends StatefulWidget {
 
 enum _Tab { home, walk, four, range, tablet }
 
-class _HuntWord {
-  _HuntWord(this.text, this.cells);
-
-  final String text;
-  final List<int> cells;
-  bool found = false;
-}
-
-class _Note {
-  const _Note({required this.body, required this.time});
-
-  final String body;
-  final DateTime time;
-
-  Map<String, String> toJson() => {
-        'body': body,
-        'time': time.toIso8601String(),
-      };
-
-  static _Note fromJson(Map<String, dynamic> json) => _Note(
-        body: json['body'] as String? ?? '',
-        time: DateTime.tryParse(json['time'] as String? ?? '') ?? DateTime.now(),
-      );
-}
+enum _Hall { map, fit, shelf, shop, card, board }
 
 class _UserScreenState extends State<UserScreen> {
-  static const _forest = Color(0xFF146B3A);
-  static const _forestDeep = Color(0xFF0C4A28);
-  static const _panel = Color(0xFF1E7A42);
+  static const _bg = Color(0xFF0B4F5C);
+  static const _deep = Color(0xFF083E49);
+  static const _panel = Color(0xFF167E86);
+  static const _gold = Color(0xFFF6C453);
+  static const _cream = Color(0xFFFFF6E8);
+  static const _ink = Color(0xFF14343A);
+  static const _purple = Color(0xFF7A4DCC);
+  static const _mint = Color(0xFF2BB5A0);
   static const _wood = Color(0xFFE7B56A);
-  static const _woodDark = Color(0xFFC4893E);
-  static const _ink = Color(0xFF4A2E14);
-  static const _cream = Color(0xFFFFF6E4);
-  static const _gold = Color(0xFFFFD15C);
-  static const _leaf = Color(0xFF7DDE6A);
-  static const _find = Color(0xFF2EAE45);
 
+  static const _parts = ['Bell', 'Valve', 'Slide', 'Mouth'];
+  static const _tune = ['C', 'E', 'G', 'C'];
+  static const _phases = ['Fit', 'Tune', 'Check', 'Keep'];
   static const _ranges = [5, 9, 14, 22];
-  static const _cols = 5;
+  static const _looks = [
+    Color(0xFFE7B56A),
+    Color(0xFF7AD0FF),
+    Color(0xFFE25B9A),
+    Color(0xFFB8E986),
+  ];
+  static const _walk = <(String, String)>[
+    ('Open', 'Open String Forest on the map.'),
+    ('Tap', 'Tap Bell, Valve, Slide, then Mouth.'),
+    ('Score', 'A finished horn turns gold and scores.'),
+    ('Next', 'Clear the build to open the next bay.'),
+  ];
+  static const _kit = <(String, IconData)>[
+    ('Violin', Icons.music_note),
+    ('Trumpet', Icons.campaign),
+    ('Sax', Icons.graphic_eq),
+    ('Harp', Icons.queue_music),
+    ('Drum', Icons.album),
+    ('Guitar', Icons.audiotrack),
+    ('Flute', Icons.waves),
+    ('Horn', Icons.volume_up),
+  ];
 
-  final _noteController = TextEditingController();
-  final _onboarding = PageController();
-  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+  final _messenger = GlobalKey<ScaffoldMessengerState>();
+  final _pages = PageController();
+  final _noteCtrl = TextEditingController();
   final _taps = _TapAudio();
-  Timer? _drillTimer;
-  SharedPreferences? _prefs;
-  List<_Note> _notes = [];
-  List<String> _letters = [];
-  List<_HuntWord> _words = [];
-  List<int> _picked = [];
-  Set<int> _hintCells = {};
+
   _Tab _tab = _Tab.home;
+  _Hall _hall = _Hall.fit;
+  bool _onboarded = false;
   int _onboardingPage = 0;
   int _walkStep = 0;
   int _rangeMinutes = 9;
-  int _columnPhase = 0;
-  int _columnSeconds = 4;
+  int _stars = 120;
+  int _hints = 3;
   int _level = 1;
   int _score = 0;
-  int _coins = 240;
-  final int _gems = 18;
-  int _hints = 3;
-  bool _setting = false;
-  bool _ready = false;
-  bool _onboarded = false;
+  int _placed = 0;
+  int _look = 0;
+  int _phase = 0;
+  int _count = 4;
+  bool _running = false;
   bool _sound = true;
-  bool _miss = false;
-
-  final _walkSteps = const [
-    (
-      'Scan',
-      'Read the target words under the grid.',
-    ),
-    (
-      'Trace',
-      'Tap the letters of one word from left to right.',
-    ),
-    (
-      'Mark',
-      'A finished word turns green and scores.',
-    ),
-    (
-      'Hunt',
-      'Clear the list to open the next glade.',
-    ),
-  ];
+  bool _reedOpen = false;
+  bool _tookStars = false;
+  bool _hat = false;
+  String _status = 'Ready';
+  String _miss = '';
+  String _instrument = 'Violin';
+  String _mapNote = 'Pick a bay on this phone.';
+  String _shelfNote = 'Tap an instrument.';
+  String _shopNote = 'Stars stay on this phone.';
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _loadBoard(0);
-    _loadLocalState();
     _taps.prepare();
+    _load();
   }
 
-  void _loadBoard(int index) {
-    const boards = [
-      (
-        'PATHYFINDRLORESQUESTMOSSA',
-        [
-          ('PATH', [0, 1, 2, 3]),
-          ('FIND', [5, 6, 7, 8]),
-          ('LORE', [10, 11, 12, 13]),
-          ('QUEST', [15, 16, 17, 18, 19]),
-        ],
-      ),
-      (
-        'QUESTPATHMFINDRLORESBRAKE',
-        [
-          ('QUEST', [0, 1, 2, 3, 4]),
-          ('PATH', [5, 6, 7, 8]),
-          ('FIND', [10, 11, 12, 13]),
-          ('LORE', [15, 16, 17, 18]),
-        ],
-      ),
-    ];
-    final board = boards[index % boards.length];
-    _letters = board.$1.split('');
-    _words = [
-      for (final word in board.$2) _HuntWord(word.$1, word.$2),
-    ];
-    _picked = [];
-    _hintCells = {};
-    _miss = false;
-  }
-
-  void _tapCell(int index) {
-    if (_words.any((word) => word.found && word.cells.contains(index))) return;
-    setState(() {
-      _miss = false;
-      if (_picked.isEmpty) {
-        _picked = [index];
-      } else if (_picked.last == index) {
-        return;
-      } else if (index == _picked.last + 1 && index ~/ _cols == _picked.last ~/ _cols) {
-        _picked = [..._picked, index];
-      } else {
-        _picked = [index];
-      }
-      final spelled = _picked.map((cell) => _letters[cell]).join();
-      final match = _words.where((word) => !word.found && word.text == spelled);
-      if (match.isNotEmpty) {
-        match.first.found = true;
-        _score += 200;
-        _coins += 40;
-        _picked = [];
-        _hintCells = {};
-        _taps.play(hit: true, enabled: _sound);
-        if (_words.every((word) => word.found)) {
-          _level++;
-          _loadBoard(_level - 1);
-        }
-        return;
-      }
-      final prefix = _words.any((word) => !word.found && word.text.startsWith(spelled));
-      if (!prefix) {
-        _picked = [];
-        _miss = true;
-        _taps.play(hit: false, enabled: _sound);
-      }
-    });
-  }
-
-  void _showFind() {
-    final next = _words.where((word) => !word.found);
-    if (next.isEmpty || _hints <= 0) return;
-    setState(() {
-      _hints--;
-      _hintCells = next.first.cells.toSet();
-    });
-    _taps.play(hit: true, enabled: _sound);
-  }
-
-  Future<void> _loadLocalState() async {
+  Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('fernquest_notes') ?? '[]';
-    try {
-      final decoded = jsonDecode(raw) as List<dynamic>;
-      _notes = decoded.whereType<Map<String, dynamic>>().map(_Note.fromJson).toList();
-    } catch (_) {
-      _notes = [];
-    }
     if (!mounted) return;
     setState(() {
-      _prefs = prefs;
-      _onboarded = prefs.getBool('fernquest_onboarded') ?? false;
-      _rangeMinutes = prefs.getInt('fernquest_range') ?? 9;
-      _ready = true;
+      _onboarded = prefs.getBool('clefbay_onboarded') ?? false;
+      _rangeMinutes = prefs.getInt('clefbay_range') ?? 9;
+      _noteCtrl.text = prefs.getString('clefbay_notes') ?? '';
     });
-  }
-
-  Future<void> _finishOnboarding() async {
-    await _prefs?.setBool('fernquest_onboarded', true);
-    if (mounted) setState(() => _onboarded = true);
-  }
-
-  Future<void> _saveRange(int minutes) async {
-    setState(() => _rangeMinutes = minutes);
-    await _prefs?.setInt('fernquest_range', minutes);
-  }
-
-  Future<void> _saveNote() async {
-    final body = _noteController.text.trim();
-    if (body.isEmpty) {
-      _toast('Write a line before you keep it.');
-      return;
-    }
-    final note = _Note(body: body, time: DateTime.now());
-    setState(() {
-      _notes = [note, ..._notes];
-      _noteController.clear();
-    });
-    await _prefs?.setString(
-      'fernquest_notes',
-      jsonEncode(_notes.map((note) => note.toJson()).toList()),
-    );
-    _toast('Kept in the field book. Private journal.');
-  }
-
-  void _toast(String message) {
-    final messenger = _messengerKey.currentState;
-    if (messenger == null) return;
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  void _startColumns() {
-    _drillTimer?.cancel();
-    setState(() {
-      _setting = true;
-      _columnPhase = 0;
-      _columnSeconds = 4;
-    });
-    _drillTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      setState(() {
-        if (_columnSeconds > 1) {
-          _columnSeconds--;
-        } else {
-          _columnPhase = (_columnPhase + 1) % 4;
-          _columnSeconds = 4;
-        }
-      });
-    });
-  }
-
-  void _stopColumns() {
-    _drillTimer?.cancel();
-    setState(() => _setting = false);
   }
 
   @override
   void dispose() {
-    _drillTimer?.cancel();
-    _noteController.dispose();
-    _onboarding.dispose();
+    _timer?.cancel();
+    _pages.dispose();
+    _noteCtrl.dispose();
     _taps.dispose();
     super.dispose();
   }
 
-  int get _foundCount => _words.where((word) => word.found).length;
+  Future<void> _advanceOnboarding() async {
+    if (_onboardingPage < 2) {
+      await _pages.nextPage(duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('clefbay_onboarded', true);
+    if (!mounted) return;
+    setState(() => _onboarded = true);
+  }
+
+  Future<void> _setRange(int minutes) async {
+    setState(() => _rangeMinutes = minutes);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('clefbay_range', minutes);
+  }
+
+  void _tapPart(int index) {
+    if (_placed >= _parts.length) return;
+    if (index != _placed) {
+      _taps.play(hit: false, enabled: _sound);
+      setState(() => _miss = 'That part is not next.');
+      return;
+    }
+    _taps.play(hit: true, enabled: _sound);
+    setState(() {
+      _placed += 1;
+      _miss = '';
+      if (_placed == _parts.length) {
+        _score += 200;
+        _stars += 40;
+      }
+    });
+  }
+
+  void _focusNext() {
+    if (_placed >= _parts.length) return;
+    _taps.play(hit: true, enabled: _sound);
+    setState(() => _miss = 'Next is ${_parts[_placed]}.');
+  }
+
+  void _useHint() {
+    if (_placed >= _parts.length) return;
+    if (_hints <= 0) {
+      setState(() => _miss = 'No hints left on this phone.');
+      _taps.play(hit: false, enabled: _sound);
+      return;
+    }
+    _taps.play(hit: true, enabled: _sound);
+    setState(() {
+      _hints -= 1;
+      _miss = 'Next is ${_parts[_placed]}.';
+    });
+  }
+
+  void _nextBay() {
+    if (_placed < _parts.length) return;
+    setState(() {
+      _placed = 0;
+      _miss = '';
+      _level += 1;
+    });
+  }
+
+  void _toggleColumns() {
+    if (_running) {
+      _timer?.cancel();
+      _timer = null;
+      setState(() {
+        _running = false;
+        _phase = 0;
+        _count = 4;
+        _status = 'Ready';
+      });
+      return;
+    }
+    setState(() {
+      _running = true;
+      _phase = 0;
+      _count = 4;
+      _status = 'Fit · 4';
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      setState(() {
+        _count -= 1;
+        if (_count <= 0) {
+          _phase = (_phase + 1) % _phases.length;
+          _count = 4;
+        }
+        _status = '${_phases[_phase]} · $_count';
+      });
+    });
+  }
+
+  void _takeStars() {
+    if (_tookStars) {
+      setState(() => _shopNote = 'Star pack already on this phone.');
+      return;
+    }
+    _taps.play(hit: true, enabled: _sound);
+    setState(() {
+      _tookStars = true;
+      _stars += 40;
+      _shopNote = 'Star pack kept on this phone.';
+    });
+  }
+
+  void _buyHints() {
+    if (_stars < 20) {
+      setState(() => _shopNote = 'Need 20 stars on this phone.');
+      _taps.play(hit: false, enabled: _sound);
+      return;
+    }
+    _taps.play(hit: true, enabled: _sound);
+    setState(() {
+      _stars -= 20;
+      _hints += 3;
+      _shopNote = 'Hint bundle kept on this phone.';
+    });
+  }
+
+  void _buyHat() {
+    if (_hat) {
+      setState(() => _shopNote = 'Hat already on this phone.');
+      return;
+    }
+    if (_stars < 30) {
+      setState(() => _shopNote = 'Need 30 stars on this phone.');
+      _taps.play(hit: false, enabled: _sound);
+      return;
+    }
+    _taps.play(hit: true, enabled: _sound);
+    setState(() {
+      _stars -= 30;
+      _hat = true;
+      _look = 3;
+      _shopNote = 'Hat kept on this phone.';
+    });
+  }
+
+  void _unlockBay() {
+    if (_reedOpen) {
+      setState(() => _mapNote = 'Reed Lock is open.');
+      return;
+    }
+    if (_stars < 40) {
+      setState(() => _mapNote = 'Need 40 stars on this phone.');
+      _taps.play(hit: false, enabled: _sound);
+      return;
+    }
+    _taps.play(hit: true, enabled: _sound);
+    setState(() {
+      _stars -= 40;
+      _reedOpen = true;
+      _mapNote = 'Reed Lock is open.';
+    });
+  }
+
+  Future<void> _saveNote() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('clefbay_notes', _noteCtrl.text.trim());
+    if (!mounted) return;
+    _messenger.currentState?.showSnackBar(
+      const SnackBar(content: Text('Kept in the field book. Private journal.')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fernquest',
       debugShowCheckedModeBanner: false,
-      scaffoldMessengerKey: _messengerKey,
+      scaffoldMessengerKey: _messenger,
       theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: _forest,
         fontFamily: 'Baloo2',
-        splashFactory: NoSplash.splashFactory,
-        colorScheme: const ColorScheme.dark(
-          surface: _forest,
-          primary: _gold,
-          onPrimary: _ink,
-          onSurface: _cream,
-        ),
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: _forestDeep,
-          behavior: SnackBarBehavior.floating,
-          contentTextStyle: TextStyle(
-            color: _cream,
-            fontFamily: 'Baloo2',
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: _bg,
       ),
-      home: !_ready
-          ? const Scaffold(
-              backgroundColor: _forest,
-              body: Center(child: CircularProgressIndicator(color: _gold)),
-            )
-          : _onboarded
-              ? _shell()
-              : _onboardingScreen(),
+      home: _onboarded ? _shell() : _onboarding(),
     );
   }
 
-  Widget _onboardingScreen() {
-    const pages = [
-      (
-        '01',
-        'Find the words\nin the glade.',
-        'Fernquest is a word hunt. The grid stays on this device.',
-      ),
-      (
-        '02',
-        'Trace four moves.\nFill four columns.',
-        'Walk shows how to trace a word. Four Columns stacks four letter rows.',
-      ),
-      (
-        '03',
-        'Keep the find\nin the book.',
-        'Tablet is a private field book. No account. No cloud. No remote AI.',
-      ),
+  Widget _onboarding() {
+    const pages = <(String, String)>[
+      ('Fit the horn\nin the bay.', 'A bay of brass and strings. Every part stays on this phone.'),
+      ('Map, shelf, and shop.', 'Open a region, fit the horn, then keep the tune in your notes.'),
+      ('Private by design.', 'No account. No cloud. No remote AI.'),
     ];
     final last = _onboardingPage == pages.length - 1;
     return Scaffold(
-      backgroundColor: _forest,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_forest, _forestDeep],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 12, 18, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'FERNQUEST',
-                  style: TextStyle(color: _gold, fontWeight: FontWeight.w700, letterSpacing: 1.4, fontSize: 18),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: _panel,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: _leaf, width: 2),
-                    ),
-                    child: PageView.builder(
-                      controller: _onboarding,
-                      itemCount: pages.length,
-                      onPageChanged: (value) => setState(() => _onboardingPage = value),
-                      itemBuilder: (_, index) {
-                        final item = pages[index];
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.$1, style: const TextStyle(color: _gold, fontWeight: FontWeight.w700)),
-                              const SizedBox(height: 8),
-                              Text(item.$2, style: _display(28, _cream)),
-                              const SizedBox(height: 8),
-                              Text(item.$3, style: const TextStyle(fontSize: 16, height: 1.35, color: _cream)),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _block(
-                  key: const Key('onboarding-advance'),
-                  label: last ? 'Begin' : 'Next',
-                  onTap: last
-                      ? _finishOnboarding
-                      : () => _onboarding.nextPage(
-                            duration: const Duration(milliseconds: 240),
-                            curve: Curves.easeOut,
-                          ),
-                ),
-                Center(
-                  child: TextButton(
-                    onPressed: _finishOnboarding,
-                    child: const Text('Skip', style: TextStyle(color: _gold, fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _shell() {
-    final pages = [_home(), _walk(), _four(), _range(), _tablet()];
-    return Scaffold(
-      backgroundColor: _forest,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1E8A48), _forestDeep],
-          ),
-        ),
-        child: SafeArea(
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
           child: Column(
             children: [
-              _purse(),
-              Expanded(child: IndexedStack(index: _tab.index, children: pages)),
-              _dock(),
+              const Text(
+                'CLEFBAY',
+                style: TextStyle(color: _gold, fontWeight: FontWeight.w700, fontSize: 28),
+              ),
+              Text(
+                '${_onboardingPage + 1} / 3',
+                style: const TextStyle(color: _cream, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pages,
+                  itemCount: pages.length,
+                  onPageChanged: (index) => setState(() => _onboardingPage = index),
+                  itemBuilder: (context, index) {
+                    final page = pages[index];
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          page.$1,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: _cream, fontSize: 32, fontWeight: FontWeight.w700, height: 1.05),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          page.$2,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: _gold, fontSize: 16),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              GestureDetector(
+                key: const Key('onboarding-advance'),
+                behavior: HitTestBehavior.opaque,
+                onTap: _advanceOnboarding,
+                child: Container(
+                  height: 56,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: _gold, borderRadius: BorderRadius.circular(16)),
+                  child: Text(
+                    last ? 'Begin' : 'Next',
+                    style: const TextStyle(color: _ink, fontWeight: FontWeight.w700, fontSize: 20),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -439,16 +366,43 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 
+  Widget _shell() {
+    return Scaffold(
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _purse(),
+            if (_tab == _Tab.home) _hallBar(),
+            Expanded(
+              child: IndexedStack(
+                index: _tab.index,
+                children: [
+                  _home(),
+                  _walkPage(),
+                  _fourPage(),
+                  _rangePage(),
+                  _tabletPage(),
+                ],
+              ),
+            ),
+            _dock(),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _purse() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
       child: Column(
         children: [
           Row(
             children: [
-              _chip(Icons.monetization_on, '$_coins', _gold),
+              _chip(Icons.star, '$_stars', _gold),
               const SizedBox(width: 8),
-              _chip(Icons.diamond, '$_gems', const Color(0xFF7AD0FF)),
+              _chip(Icons.lightbulb, '$_hints', const Color(0xFFD7B4FF)),
               const Spacer(),
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -464,7 +418,7 @@ class _UserScreenState extends State<UserScreen> {
             ],
           ),
           Text(
-            'Trail of $_rangeMinutes minutes',
+            'Bay of $_rangeMinutes minutes',
             style: const TextStyle(color: _gold, fontWeight: FontWeight.w700, fontSize: 13),
           ),
         ],
@@ -474,13 +428,10 @@ class _UserScreenState extends State<UserScreen> {
 
   Widget _chip(IconData icon, String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: _forestDeep,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(color: _deep, borderRadius: BorderRadius.circular(14)),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 16),
           const SizedBox(width: 4),
@@ -490,217 +441,506 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 
-  Widget _dock() {
-    const items = [
-      (_Tab.home, 'Home', 'tab-home'),
-      (_Tab.walk, 'Walk', 'tab-walk'),
-      (_Tab.four, 'Four', 'tab-four'),
-      (_Tab.range, 'Range', 'tab-range'),
-      (_Tab.tablet, 'Tablet', 'tab-tablet'),
+  Widget _hallBar() {
+    const items = <(_Hall, String, String)>[
+      (_Hall.map, 'Map', 'hall-map'),
+      (_Hall.fit, 'Fit', 'hall-fit'),
+      (_Hall.shelf, 'Shelf', 'hall-shelf'),
+      (_Hall.shop, 'Shop', 'hall-shop'),
+      (_Hall.card, 'Card', 'hall-card'),
+      (_Hall.board, 'Board', 'hall-board'),
     ];
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: _forestDeep,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          for (final item in items)
-            Expanded(
-              child: GestureDetector(
-                key: Key(item.$3),
-                behavior: HitTestBehavior.opaque,
-                onTap: () => setState(() => _tab = item.$1),
-                child: SizedBox(
-                  height: 44,
-                  child: Center(
-                    child: Text(
-                      item.$2,
-                      style: TextStyle(
-                        fontFamily: 'Baloo2',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _tab == item.$1 ? _gold : const Color(0xFFB7D8C0),
+    return SizedBox(
+      height: 40,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            for (final item in items)
+              Expanded(
+                child: GestureDetector(
+                  key: Key(item.$3),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _hall = item.$1),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: _hall == item.$1 ? _gold : _deep,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          item.$2,
+                          style: TextStyle(
+                            color: _hall == item.$1 ? _ink : _cream,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _home() {
-    return _scroll(
-      children: [
-        Text(
-          'LEVEL $_level · FERN GLADE',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 16),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (var i = 0; i < 3; i++)
-              Icon(
-                i < _foundCount.clamp(0, 3) ? Icons.star : Icons.star_border,
-                color: _gold,
-                size: 22,
-              ),
-            const SizedBox(width: 8),
-            Text(
-              '$_foundCount/${_words.length} words',
-              style: const TextStyle(color: _cream, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(width: 8),
-            Text('$_score', style: const TextStyle(color: _gold, fontWeight: FontWeight.w700, fontSize: 18)),
-          ],
-        ),
-        if (_miss)
-          const Padding(
-            padding: EdgeInsets.only(top: 4),
-            child: Text(
-              'That is not a word on the list.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFFFD0D0), fontWeight: FontWeight.w700),
-            ),
+    return switch (_hall) {
+      _Hall.map => _map(),
+      _Hall.fit => _fit(),
+      _Hall.shelf => _shelf(),
+      _Hall.shop => _shop(),
+      _Hall.card => _card(),
+      _Hall.board => _board(),
+    };
+  }
+
+  Widget _fit() {
+    final status = _placed == _parts.length
+        ? 'built'
+        : (_miss.isEmpty ? 'Tap Bell, then Valve, Slide, and Mouth.' : _miss);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+      child: Column(
+        children: [
+          const Text(
+            'LẮP GHÉP',
+            style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 22),
           ),
-        const SizedBox(height: 8),
-        _board(),
-        const SizedBox(height: 10),
-        _targetCard(),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            _roundTool(Icons.search, 'Hint', _showFind),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _showFind,
-                child: Container(
-                  height: 48,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: _find,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF166B28), width: 2),
-                  ),
-                  child: const Text(
-                    'FIND',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18),
-                  ),
+          Text(
+            'LEVEL $_level · $_score',
+            style: const TextStyle(color: _gold, fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: DecoratedBox(
+              decoration: _cardDec(),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: IgnorePointer(child: CustomPaint(painter: _HornPainter())),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'GHI NHỚ GIAI ĐIỆU',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              for (var i = 0; i < _tune.length; i++)
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: i < _placed ? _gold : _deep,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    _tune[i],
+                                    style: TextStyle(
+                                      color: i < _placed ? _ink : _cream,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
+          const SizedBox(height: 8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final size = ((constraints.maxWidth - 24) / 4).clamp(44.0, 64.0);
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [for (var i = 0; i < _parts.length; i++) _partTile(i, size)],
+              );
+            },
+          ),
+          const SizedBox(height: 6),
+          Text(
+            status,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(child: _goldButton('fit-focus', 'LẮP GHÉP\nCÁC PHẦN', _focusNext)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _mintButton('try-sound', 'CHƠI THỬ\nÂM THANH', () {
+                  _taps.play(hit: true, enabled: _sound);
+                }),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (_placed == _parts.length)
+                GestureDetector(
+                  key: const Key('next-bay'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _nextBay,
+                  child: const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Text('Next bay', style: TextStyle(color: _gold, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              for (var i = 0; i < 3; i++)
+                GestureDetector(
+                  key: ValueKey('hint-$i'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _useHint,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    margin: const EdgeInsets.only(left: 6),
+                    decoration: const BoxDecoration(color: _purple, shape: BoxShape.circle),
+                    child: const Icon(Icons.lightbulb, color: _cream, size: 16),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _partTile(int index, double size) {
+    final done = index < _placed;
+    final next = index == _placed && _placed < _parts.length;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: GestureDetector(
+        key: ValueKey('part-$index'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _tapPart(index),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: done ? _mint : _wood,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: next ? _cream : const Color(0xFFC4893E), width: next ? 3 : 1),
+          ),
+          child: Center(
+            child: Text(
+              _parts[index],
+              style: const TextStyle(color: _ink, fontWeight: FontWeight.w700, fontSize: 11),
+            ),
+          ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _map() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+      child: Column(
+        children: [
+          _profile(),
+          const SizedBox(height: 8),
+          _region('String Forest', 'LEVEL 1', Icons.park, true, 'region-string'),
+          _region('Brass Canyon', 'LEVEL 5', Icons.landscape, true, 'region-brass'),
+          _region('Reed Lock', _reedOpen ? 'Open' : 'Locked', Icons.lock, _reedOpen, 'region-reed'),
+          Text(_mapNote, style: const TextStyle(color: _gold, fontSize: 12)),
+          const Spacer(),
+          _goldButton('unlock-bay', 'MỞ KHÓA KHU VỰC MỚI', _unlockBay),
+        ],
+      ),
+    );
+  }
+
+  Widget _profile() {
+    return Container(
+      height: 84,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: _cardDec(),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: _looks[_look],
+            child: Icon(_hat ? Icons.school : Icons.person, color: _ink),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Player1', style: TextStyle(color: _cream, fontWeight: FontWeight.w700)),
+                Text('Stars $_stars · Level $_level', style: const TextStyle(color: _gold, fontSize: 12)),
+                Text('Most played $_instrument', style: const TextStyle(color: _cream, fontSize: 12)),
+              ],
+            ),
+          ),
+          GestureDetector(
+            key: const Key('look-swap'),
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _look = (_look + 1) % _looks.length),
+            child: const Padding(
+              padding: EdgeInsets.all(6),
+              child: Text(
+                'ĐỔI\nNGOẠI HÌNH',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: _gold, fontSize: 10, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _region(String name, String sub, IconData icon, bool open, String keyName) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        key: Key(keyName),
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (!open) {
+            setState(() => _mapNote = 'This bay is still locked.');
+            _taps.play(hit: false, enabled: _sound);
+            return;
+          }
+          setState(() => _hall = _Hall.fit);
+          _taps.play(hit: true, enabled: _sound);
+        },
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: _cardDec(gold: open),
+          child: Row(
+            children: [
+              Icon(icon, color: _gold),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: const TextStyle(color: _cream, fontWeight: FontWeight.w700)),
+                    Text(sub, style: const TextStyle(color: _gold, fontSize: 11)),
+                  ],
+                ),
+              ),
+              Icon(open ? Icons.star : Icons.lock, color: open ? _gold : _cream, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _shelf() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'SƯU TẬP',
+            style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 22),
+          ),
+          Text(_shelfNote, style: const TextStyle(color: _gold, fontSize: 12)),
+          const SizedBox(height: 8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = (constraints.maxWidth - 18) / 4;
+              return Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final item in _kit)
+                    SizedBox(
+                      width: width,
+                      height: 72,
+                      child: GestureDetector(
+                        key: ValueKey('shelf-${item.$1.toLowerCase()}'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _taps.play(hit: true, enabled: _sound);
+                          setState(() {
+                            _instrument = item.$1;
+                            _shelfNote = '${item.$1} is in the bay.';
+                            _hall = _Hall.card;
+                          });
+                        },
+                        child: DecoratedBox(
+                          decoration: _cardDec(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(item.$2, color: _gold, size: 22),
+                              Text(item.$1, style: const TextStyle(color: _cream, fontSize: 11, fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _card() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+      child: Column(
+        children: [
+          const Text(
+            'TÌM KIẾM NHẠC CỤ',
+            style: TextStyle(color: _gold, fontWeight: FontWeight.w700, fontSize: 12),
+          ),
+          Text(
+            _instrument.toUpperCase(),
+            style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 28),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: DecoratedBox(
+              decoration: _cardDec(),
+              child: const Center(
+                child: IgnorePointer(
+                  child: SizedBox(width: 180, height: 120, child: CustomPaint(painter: _HornPainter())),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'A bay tune kept on this phone.',
+            style: TextStyle(color: _cream, fontSize: 13),
+          ),
+          const SizedBox(height: 8),
+          _mintButton('replay-tune', 'NGHE LẠI GIAI ĐIỆU', () {
+            _taps.play(hit: true, enabled: _sound);
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _shop() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'CỬA HÀNG',
+            style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 22),
+          ),
+          Text(_shopNote, style: const TextStyle(color: _gold, fontSize: 12)),
+          const SizedBox(height: 8),
+          _pack('STAR PACK', '+40 stars', 'NHẬN SAO', _takeStars, 'take-stars'),
+          _pack('HINT PACK', '+3 hints · 20 stars', 'MUA NGAY', _buyHints, 'buy-hints'),
+          _pack('SPECIAL HAT', '30 stars', 'MUA MŨ', _buyHat, 'buy-hat'),
+        ],
+      ),
+    );
+  }
+
+  Widget _pack(String title, String detail, String action, VoidCallback onTap, String keyName) {
+    return Container(
+      height: 72,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: _cardDec(),
+      child: Row(
+        children: [
+          const Icon(Icons.star, color: _gold),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: _cream, fontWeight: FontWeight.w700)),
+                Text(detail, style: const TextStyle(color: _gold, fontSize: 12)),
+              ],
+            ),
+          ),
+          GestureDetector(
+            key: Key(keyName),
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: Container(
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: _mint, borderRadius: BorderRadius.circular(12)),
+              child: Text(action, style: const TextStyle(color: _ink, fontWeight: FontWeight.w700, fontSize: 12)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _board() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final tile = ((constraints.maxWidth - 32) / _cols).clamp(44.0, 64.0);
-        return Center(
-          child: SizedBox(
-            width: tile * _cols + 32,
-            child: Column(
-              children: [
-                for (var row = 0; row < _cols; row++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        for (var col = 0; col < _cols; col++)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3),
-                            child: SizedBox(
-                              width: tile,
-                              height: tile,
-                              child: _cell(row * _cols + col),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _cell(int index) {
-    final found = _words.any((word) => word.found && word.cells.contains(index));
-    final picked = _picked.contains(index);
-    final hinted = _hintCells.contains(index);
-    final color = found ? _leaf : _wood;
-    return GestureDetector(
-      key: ValueKey(found ? 'found-$index' : 'cell-$index'),
-      behavior: HitTestBehavior.opaque,
-      onTap: () => _tapCell(index),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: picked || hinted ? Colors.white : _woodDark,
-            width: picked || hinted ? 3 : 1.4,
-          ),
-          boxShadow: const [BoxShadow(color: Color(0x33000000), offset: Offset(0, 2))],
-        ),
-        child: Center(
-          child: Text(
-            _letters[index],
-            style: TextStyle(
-              color: _ink,
-              fontFamily: 'Baloo2',
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _targetCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _forestDeep,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _leaf),
-      ),
+    final rows = [
+      ('1', 'BrassCaptain', '11', '350'),
+      ('2', 'StringWarden', '8', '240'),
+      ('3', 'Player1', '$_level', '$_stars'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('TARGET', style: TextStyle(color: _gold, fontWeight: FontWeight.w700, letterSpacing: 1)),
-          const SizedBox(height: 6),
-          for (final word in _words)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+          const Text(
+            'BẢNG XẾP HẠNG',
+            style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 22),
+          ),
+          const Text('On this phone only.', style: TextStyle(color: _gold, fontSize: 12)),
+          const SizedBox(height: 8),
+          for (final row in rows)
+            Container(
+              height: 52,
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: _cardDec(gold: row.$2 == 'Player1'),
               child: Row(
                 children: [
-                  Text(word.text, style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 16)),
-                  const Spacer(),
-                  Text(
-                    word.found ? 'found' : '${word.text.length} left',
-                    style: TextStyle(
-                      color: word.found ? _leaf : _gold,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  Text('#${row.$1}', style: const TextStyle(color: _gold, fontWeight: FontWeight.w700)),
+                  const SizedBox(width: 10),
+                  const CircleAvatar(radius: 14, backgroundColor: _wood, child: Icon(Icons.person, size: 16, color: _ink)),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(row.$2, style: const TextStyle(color: _cream, fontWeight: FontWeight.w700))),
+                  Text('Lv ${row.$3}', style: const TextStyle(color: _gold, fontSize: 12)),
+                  const SizedBox(width: 8),
+                  Text(row.$4, style: const TextStyle(color: _cream, fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -709,256 +949,242 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 
-  Widget _roundTool(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        width: 64,
-        height: 48,
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A6FE0),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 16),
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
-          ],
-        ),
+  Widget _walkPage() {
+    final step = _walk[_walkStep];
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(step.$1, style: const TextStyle(color: _gold, fontWeight: FontWeight.w700, fontSize: 14)),
+          const SizedBox(height: 8),
+          Text(step.$2, style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 22)),
+          const Spacer(),
+          _goldButton('walk-advance', _walkStep == _walk.length - 1 ? 'Done' : 'Next move', () {
+            if (_walkStep >= _walk.length - 1) return;
+            setState(() => _walkStep += 1);
+          }),
+        ],
       ),
     );
   }
 
-  Widget _walk() {
-    final step = _walkSteps[_walkStep];
-    return _scroll(
-      children: [
-        Text('MOVE  0${_walkStep + 1} / 04', style: _kicker()),
-        const SizedBox(height: 8),
-        Text(step.$1, style: _display(34, _cream)),
-        const SizedBox(height: 8),
-        Text(step.$2, style: const TextStyle(fontSize: 17, height: 1.35, color: _cream)),
-        const SizedBox(height: 16),
-        _block(
-          key: const Key('walk-advance'),
-          label: _walkStep == _walkSteps.length - 1 ? 'Hunt again' : 'Next move',
-          onTap: () => setState(() => _walkStep = (_walkStep + 1) % _walkSteps.length),
-        ),
-      ],
-    );
-  }
-
-  Widget _four() {
-    const labels = ['Seek', 'Trace', 'Mark', 'Keep'];
-    return _scroll(
-      children: [
-        Text('FOUR COLUMNS', style: _kicker()),
-        const SizedBox(height: 4),
-        Text(
-          _setting ? '${labels[_columnPhase]} · $_columnSeconds' : 'Ready',
-          style: _display(28, _cream),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Four letter rows. The live row fills for four counts.',
-          style: TextStyle(color: _cream, fontSize: 15, height: 1.35),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 150,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(4, (index) {
-              final active = _setting && index == _columnPhase;
-              final filled = active ? (5 - _columnSeconds) : 0;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: _forestDeep,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: active ? _gold : _wood, width: 2),
-                          ),
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: List.generate(4, (slot) {
-                                  final on = slot >= 4 - filled;
-                                  return Container(
-                                    height: 16,
-                                    margin: const EdgeInsets.only(top: 4),
-                                    decoration: BoxDecoration(
-                                      color: on ? _wood : const Color(0xFF1A5C34),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(labels[index], style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 12)),
-                    ],
-                  ),
-                ),
-              );
-            }),
+  Widget _fourPage() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            _status,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 28),
           ),
-        ),
-        const SizedBox(height: 12),
-        _block(
-          key: const Key('columns-toggle'),
-          label: _setting ? 'Stop the hunt' : 'Start the hunt',
-          onTap: _setting ? _stopColumns : _startColumns,
-        ),
-      ],
-    );
-  }
-
-  Widget _range() {
-    return _scroll(
-      children: [
-        Text('RANGE', style: _kicker()),
-        const SizedBox(height: 4),
-        Text('Trail clock.', style: _display(30, _cream)),
-        const SizedBox(height: 6),
-        const Text('Stored only on this device.', style: TextStyle(color: _cream, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            for (final minute in _ranges)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    key: Key('range-$minute'),
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => _saveRange(minute),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 110,
+            child: Row(
+              children: [
+                for (var i = 0; i < _phases.length; i++)
+                  Expanded(
                     child: Container(
-                      height: 64,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: _rangeMinutes == minute ? _gold : _wood,
-                        borderRadius: BorderRadius.circular(16),
+                        color: _running && i == _phase ? _gold : _panel,
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '$minute',
-                        style: const TextStyle(
-                          fontFamily: 'Baloo2',
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: _ink,
-                        ),
+                        _phases[i],
+                        style: TextStyle(color: _running && i == _phase ? _ink : _cream, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          _goldButton('columns-toggle', _running ? 'Stop the bay' : 'Start the bay', _toggleColumns),
+        ],
+      ),
+    );
+  }
+
+  Widget _rangePage() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'How long is this bay?',
+            style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 20),
+          ),
+          const SizedBox(height: 8),
+          for (final minutes in _ranges) ...[
+            SizedBox(
+              height: 64,
+              child: GestureDetector(
+                key: Key('range-$minutes'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _setRange(minutes),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _rangeMinutes == minutes ? _gold : _panel,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$minutes min',
+                      style: TextStyle(
+                        color: _rangeMinutes == minutes ? _ink : _cream,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
                       ),
                     ),
                   ),
                 ),
               ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _tablet() {
-    return _scroll(
-      children: [
-        Text('TABLET', style: _kicker()),
-        const SizedBox(height: 4),
-        Text('Field book.', style: _display(30, _cream)),
-        const SizedBox(height: 10),
-        TextField(
-          key: const Key('tablet-field'),
-          controller: _noteController,
-          minLines: 3,
-          maxLines: 5,
-          style: const TextStyle(color: _ink, fontSize: 16),
-          cursorColor: _forestDeep,
-          decoration: InputDecoration(
-            hintText: 'Which word did you find?',
-            filled: true,
-            fillColor: _cream,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-        ),
-        const SizedBox(height: 12),
-        _block(key: const Key('tablet-save'), label: 'Save note', onTap: _saveNote),
-        const SizedBox(height: 14),
-        if (_notes.isEmpty)
-          const Text(
-            'The field book is empty. The first note stays on this phone.',
-            style: TextStyle(color: _cream),
-          )
-        else
-          for (final note in _notes.take(6))
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: _cream, borderRadius: BorderRadius.circular(14)),
-              child: Text(note.body, style: const TextStyle(color: _ink, fontSize: 15)),
             ),
-      ],
+            const SizedBox(height: 8),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _scroll({required List<Widget> children}) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-      children: children,
+  Widget _tabletPage() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('Field book', style: TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 22)),
+          const Text('Private journal on this phone.', style: TextStyle(color: _gold, fontSize: 13)),
+          const SizedBox(height: 8),
+          TextField(
+            key: const Key('tablet-field'),
+            controller: _noteCtrl,
+            style: const TextStyle(color: _cream),
+            decoration: InputDecoration(
+              hintText: 'Which part did you fit?',
+              hintStyle: const TextStyle(color: Color(0x99FFF6E8)),
+              filled: true,
+              fillColor: _deep,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _goldButton('tablet-save', 'Save', _saveNote),
+        ],
+      ),
     );
   }
 
-  Widget _block({
-    required Key key,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      key: key,
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: 48,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: _find,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(color: Colors.white, fontFamily: 'Baloo2', fontWeight: FontWeight.w700, fontSize: 16),
+  Widget _dock() {
+    return Container(
+      color: _deep,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          _dockItem(Icons.map, 'Home', _Tab.home, 'tab-home'),
+          _dockItem(Icons.directions_walk, 'Walk', _Tab.walk, 'tab-walk'),
+          _dockItem(Icons.view_column, 'Four', _Tab.four, 'tab-four'),
+          _dockItem(Icons.timelapse, 'Range', _Tab.range, 'tab-range'),
+          _dockItem(Icons.menu_book, 'Tablet', _Tab.tablet, 'tab-tablet'),
+        ],
+      ),
+    );
+  }
+
+  Widget _dockItem(IconData icon, String label, _Tab tab, String keyName) {
+    final on = _tab == tab;
+    return Expanded(
+      child: GestureDetector(
+        key: Key(keyName),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _tab = tab),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: on ? _gold : _cream, size: 22),
+            Text(label, style: TextStyle(color: on ? _gold : _cream, fontSize: 11, fontWeight: FontWeight.w700)),
+          ],
         ),
       ),
     );
   }
 
-  TextStyle _kicker() => const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.4,
-        color: _gold,
-      );
+  Widget _goldButton(String keyName, String label, VoidCallback onTap) {
+    return GestureDetector(
+      key: Key(keyName),
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(color: _gold, borderRadius: BorderRadius.circular(14)),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: _ink, fontWeight: FontWeight.w700, fontSize: 13, height: 1.1),
+        ),
+      ),
+    );
+  }
 
-  TextStyle _display(double size, Color color) => TextStyle(
-        fontFamily: 'Baloo2',
-        fontSize: size,
-        height: 1.05,
-        fontWeight: FontWeight.w700,
-        color: color,
-      );
+  Widget _mintButton(String keyName, String label, VoidCallback onTap) {
+    return GestureDetector(
+      key: Key(keyName),
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(color: _purple, borderRadius: BorderRadius.circular(14)),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: _cream, fontWeight: FontWeight.w700, fontSize: 13, height: 1.1),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _cardDec({bool gold = true}) {
+    return BoxDecoration(
+      color: _panel,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: gold ? _gold : const Color(0xFF0E6270), width: 1.5),
+    );
+  }
+}
+
+class _HornPainter extends CustomPainter {
+  const _HornPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final brass = Paint()..color = const Color(0xFFF6C453);
+    final body = RRect.fromLTRBR(4, size.height * 0.42, size.width * 0.62, size.height * 0.64, Radius.circular(size.height * 0.08));
+    canvas.drawRRect(body, brass);
+    final bell = Path()
+      ..moveTo(size.width * 0.55, size.height * 0.32)
+      ..lineTo(size.width * 0.94, size.height * 0.12)
+      ..lineTo(size.width * 0.94, size.height * 0.90)
+      ..lineTo(size.width * 0.55, size.height * 0.72)
+      ..close();
+    canvas.drawPath(bell, Paint()..color = const Color(0xFFE8A317));
+    final valve = Paint()..color = const Color(0xFFFFF6E8);
+    for (final x in [0.18, 0.32, 0.46]) {
+      canvas.drawCircle(Offset(size.width * x, size.height * 0.40), size.height * 0.07, valve);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _TapAudio {

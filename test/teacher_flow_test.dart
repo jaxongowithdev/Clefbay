@@ -19,7 +19,7 @@ void main() {
     await tester.pumpWidget(const UserScreen());
     await tester.pumpAndSettle();
 
-    expect(find.text('Find the words\nin the glade.'), findsOneWidget);
+    expect(find.text('Fit the horn\nin the bay.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('onboarding-advance')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('onboarding-advance')));
@@ -28,35 +28,58 @@ void main() {
     await tester.tap(find.byKey(const Key('onboarding-advance')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Trail of 9 minutes'), findsOneWidget);
+    expect(find.text('Bay of 9 minutes'), findsOneWidget);
+    expect(find.text('GHI NHỚ GIAI ĐIỆU'), findsOneWidget);
     for (var index = 0; index < 4; index++) {
-      final cell = find.byKey(ValueKey('cell-$index'));
-      await tester.ensureVisible(cell);
+      final part = find.byKey(ValueKey('part-$index'));
+      await tester.ensureVisible(part);
       await tester.pumpAndSettle();
-      await tester.tap(cell);
+      await tester.tap(part);
       await tester.pump();
     }
-    expect(find.text('found'), findsWidgets);
+    expect(find.text('built'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hall-map')));
+    await tester.pumpAndSettle();
+    expect(find.text('String Forest'), findsOneWidget);
+    expect(find.text('MỞ KHÓA KHU VỰC MỚI'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hall-shelf')));
+    await tester.pumpAndSettle();
+    expect(find.text('SƯU TẬP'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('shelf-violin')));
+    await tester.pumpAndSettle();
+    expect(find.text('VIOLIN'), findsOneWidget);
+    expect(find.text('NGHE LẠI GIAI ĐIỆU'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hall-shop')));
+    await tester.pumpAndSettle();
+    expect(find.text('CỬA HÀNG'), findsOneWidget);
+    expect(find.text('MUA NGAY'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hall-board')));
+    await tester.pumpAndSettle();
+    expect(find.text('BẢNG XẾP HẠNG'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-walk')));
     await tester.pumpAndSettle();
-    expect(find.text('Read the target words under the grid.'), findsOneWidget);
+    expect(find.text('Open String Forest on the map.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Tap the letters of one word from left to right.'), findsOneWidget);
+    expect(find.text('Tap Bell, Valve, Slide, then Mouth.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('A finished word turns green and scores.'), findsOneWidget);
+    expect(find.text('A finished horn turns gold and scores.'), findsOneWidget);
     await tester.tap(find.byKey(const Key('walk-advance')));
     await tester.pump();
-    expect(find.text('Clear the list to open the next glade.'), findsOneWidget);
+    expect(find.text('Clear the build to open the next bay.'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-four')));
     await tester.pumpAndSettle();
     expect(find.text('Ready'), findsOneWidget);
     await tester.tap(find.byKey(const Key('columns-toggle')));
     await tester.pump();
-    expect(find.text('Seek · 4'), findsOneWidget);
+    expect(find.text('Fit · 4'), findsOneWidget);
     await tester.tap(find.byKey(const Key('columns-toggle')));
     await tester.pump();
 
@@ -68,7 +91,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('tab-home')));
     await tester.pumpAndSettle();
-    expect(find.text('Trail of 14 minutes'), findsOneWidget);
+    expect(find.text('Bay of 14 minutes'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('tab-tablet')));
     await tester.pumpAndSettle();

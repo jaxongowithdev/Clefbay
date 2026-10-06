@@ -1,5 +1,5 @@
 name: morrow_steps_example
-description: "Fernquest - Offline word-hunt game"
+description: "Clefbay - Offline instrument-bay game"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
